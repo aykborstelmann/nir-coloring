@@ -6,7 +6,7 @@ import aiofiles
 import tqdm.asyncio
 from azure.storage.blob.aio import BlobClient, StorageStreamDownloader
 
-from src.config import *
+from nircoloring.config import *
 
 
 def load_metadata():

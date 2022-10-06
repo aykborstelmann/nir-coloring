@@ -1,3 +1,22 @@
+# NIR-Coloring
+
+## Getting Started
+
+### TLDR
+Create your Anaconda environment
+
+```bash
+conda env create --file environment.yml
+conda develop -n nir-coloring .
+conda activate nir-coloring
+```
+
+## Downloading Datasets
+### Caltech Camera Traps
+```bash
+python nircoloring/dataset/caltech.py
+```
+
 ## Links
 
 ### Dataset
