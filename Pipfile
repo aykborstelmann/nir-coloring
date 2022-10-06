@@ -8,6 +8,7 @@ aiofiles = "*"
 tqdm = "*"
 azure-storage-blob = "*"
 python-dotenv = "*"
+aiohttp = "*"
 
 [dev-packages]
 
