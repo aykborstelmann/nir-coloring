@@ -1,4 +1,5 @@
 import asyncio
+import imghdr
 import json
 import random
 
@@ -14,8 +15,9 @@ def load_metadata():
         return json.load(file)
 
 
-def create_random_database_subset(dataset, size=10000):
+def create_random_database_subset(dataset, size=1000):
     images = dataset["images"]
+    images = list(filter(lambda image: not (image["width"] == 800 and image["height"] == 584), images))
     return random.sample(images, size)
 
 
@@ -33,12 +35,12 @@ def create_random_image_filename_subset_and_save():
 def load_filenames():
     with open(DATASET_SUBSET, "r") as file:
         images = file.readlines()
-    return images
+    return [image.strip() for image in images]
 
 
 async def fetch_file(sema, filename):
     filepath = os.path.join(DATASET_IMAGES, filename)
-    if os.path.exists(filepath):
+    if os.path.exists(filepath) and imghdr.what(filepath) == 'jpeg':
         return
 
     blob_url = CALTECH_DOWNLOAD_IMAGE_URL_TEMPLATE.format(filename=filename)
@@ -48,6 +50,8 @@ async def fetch_file(sema, filename):
             content = await downloader.readall()
         async with aiofiles.open(filepath, "wb") as outfile:
             await outfile.write(content)
+
+    await fetch_file(sema, filename)
 
 
 async def wrap_in_progress_bar(tasks):
@@ -59,7 +63,7 @@ def download_files():
     os.makedirs(DATASET_IMAGES, exist_ok=True)
     images = load_filenames()
 
-    sema = asyncio.BoundedSemaphore(5)
+    sema = asyncio.BoundedSemaphore(10)
     tasks = [fetch_file(sema, url) for url in images]
     asyncio.run(wrap_in_progress_bar(tasks))
 
