@@ -1,13 +1,17 @@
 import asyncio
 import imghdr
+import io
 import json
 import random
 
 import aiofiles
 import tqdm.asyncio
+from PIL import Image
 from azure.storage.blob.aio import BlobClient, StorageStreamDownloader
 
 from nircoloring.config import *
+
+IMAGE_DOWNLOAD_SIZE = 1024
 
 
 def load_metadata():
@@ -45,13 +49,26 @@ async def fetch_file(sema, filename):
 
     blob_url = CALTECH_DOWNLOAD_IMAGE_URL_TEMPLATE.format(filename=filename)
     async with sema:
+        buffer = io.BytesIO()
+
         async with BlobClient.from_blob_url(blob_url) as client:
             downloader: StorageStreamDownloader = await client.download_blob()
             content = await downloader.readall()
+            image = Image.open(io.BytesIO(content))
+            image = crop_square_from_center(image)
+            image.save(buffer, format="JPEG")
         async with aiofiles.open(filepath, "wb") as outfile:
-            await outfile.write(content)
+            await outfile.write(buffer.getbuffer())
 
     await fetch_file(sema, filename)
+
+
+def crop_square_from_center(image):
+    left = int((image.width - IMAGE_DOWNLOAD_SIZE) / 2)
+    top = int((image.height - IMAGE_DOWNLOAD_SIZE) / 2)
+    right = int((image.width + IMAGE_DOWNLOAD_SIZE) / 2)
+    bottom = int((image.height + IMAGE_DOWNLOAD_SIZE) / 2)
+    return image.crop((left, top, right, bottom))
 
 
 async def wrap_in_progress_bar(tasks):
