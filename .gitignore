@@ -10,6 +10,6 @@
 *.synctex.gz
 *.log
 .vscode/
-out/dataset
+tmp/datasets
 .idea/
 data/dataset/caltech_images.json
