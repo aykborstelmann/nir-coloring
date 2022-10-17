@@ -6,7 +6,7 @@ import json
 import os
 import random
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, List
 
 import aiofiles
 import tqdm.asyncio
@@ -22,10 +22,10 @@ TRAIN_DATASET_PROPORTION = 0.8
 
 @dataclass
 class DatasetSubset:
-    trainA: list[str]
-    trainB: list[str]
-    testA: list[str]
-    testB: list[str]
+    trainA: List[str]
+    trainB: List[str]
+    testA: List[str]
+    testB: List[str]
 
 
 def load_metadata():
