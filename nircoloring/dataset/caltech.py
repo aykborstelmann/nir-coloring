@@ -33,7 +33,7 @@ def load_metadata():
         return json.load(file)
 
 
-def create_random_database_subset(dataset, size=1000):
+def create_random_database_subset(dataset, size=5000):
     images = dataset["images"]
     images = list(filter(lambda image: not (image["width"] == 800 and image["height"] == 584), images))
     return random.sample(images, size)
@@ -74,7 +74,7 @@ async def fetch_or_move(sema, directory, filename):
             os.rename(tmp_filepath, filepath)
             return
 
-        await fetch_file_from_blob(asyncio.BoundedSemaphore(1), filename, target_directory)
+        await fetch_file_from_blob(filename, target_directory)
 
 
 def create_train_and_test_devision():
@@ -103,7 +103,7 @@ def load_dataset_subset():
         return DatasetSubset(**json_file_as_dict)
 
 
-async def fetch_file_from_blob(sema, filename, directory):
+async def fetch_file_from_blob(filename, directory, sema=asyncio.BoundedSemaphore(1)):
     filepath = os.path.join(directory, filename)
     if os.path.exists(filepath) and imghdr.what(filepath) == 'jpeg':
         return
@@ -116,20 +116,26 @@ async def fetch_file_from_blob(sema, filename, directory):
             downloader: StorageStreamDownloader = await client.download_blob()
             content = await downloader.readall()
             image = Image.open(io.BytesIO(content))
-            image = crop_square_from_center(image)
+            image = crop_and_scale_from_center(image)
             image.save(buffer, format="JPEG")
         async with aiofiles.open(filepath, "wb") as outfile:
             await outfile.write(buffer.getbuffer())
 
-    await fetch_file_from_blob(sema, filename, directory)
+    await fetch_file_from_blob(filename, directory, sema)
 
 
-def crop_square_from_center(image):
-    left = int((image.width - IMAGE_DOWNLOAD_SIZE) / 2)
-    top = int((image.height - IMAGE_DOWNLOAD_SIZE) / 2)
-    right = int((image.width + IMAGE_DOWNLOAD_SIZE) / 2)
-    bottom = int((image.height + IMAGE_DOWNLOAD_SIZE) / 2)
-    return image.crop((left, top, right, bottom))
+def crop_and_scale_from_center(img):
+    img = img.crop((0, 30, img.width, img.height - 90))
+
+    crop_size = min(img.width, img.height)
+
+    left = int((img.width - crop_size) / 2)
+    top = int((img.height - crop_size) / 2)
+    right = int((img.width + crop_size) / 2)
+    bottom = int((img.height + crop_size) / 2)
+    img = img.crop((left, top, right, bottom))
+
+    return img.resize((IMAGE_DOWNLOAD_SIZE, IMAGE_DOWNLOAD_SIZE), Image.Resampling.LANCZOS)
 
 
 async def wrap_in_progress_bar(tasks):
@@ -142,7 +148,7 @@ def download_files():
     images = load_filenames()
 
     sema = asyncio.BoundedSemaphore(10)
-    tasks = [fetch_file_from_blob(sema, filename, DATASET_TEMP_IMAGES) for filename in images]
+    tasks = [fetch_file_from_blob(filename, DATASET_TEMP_IMAGES, sema) for filename in images]
     asyncio.run(wrap_in_progress_bar(tasks))
 
 
@@ -164,7 +170,7 @@ def get_dimensions(filename):
 
 
 if __name__ == '__main__':
-    if not os.path.exists(DATASET_SUBSET):
+    if not os.path.exists(DATASET_TRAIN_TEST_SPLIT):
         create_dataset_subset_and_download()
         create_train_and_test_devision()
 
