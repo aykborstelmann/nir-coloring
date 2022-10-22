@@ -6,6 +6,7 @@ import json
 import os
 import random
 from dataclasses import dataclass
+from os.path import join
 from typing import Dict, List
 
 import aiofiles
@@ -13,9 +14,12 @@ import tqdm.asyncio
 from PIL import Image, ImageChops
 from azure.storage.blob.aio import BlobClient, StorageStreamDownloader
 
-from nircoloring.config import *
-from nircoloring.config import DATASET_TRAIN_TEST_SPLIT
+from nircoloring.config import DATASET_TRAIN_TEST_SPLIT, DATASET_METADATA_FILE, DATASET_SUBSET, DATA_DIRECTORY, \
+    DATASET_TEMP_IMAGES, DATASET_OUT, DATASET_TEST_A, get_dataset_image_file, DATASET_TEST_B, DATASET_TRAIN_A, \
+    DATASET_TRAIN_B, CALTECH_DOWNLOAD_IMAGE_URL_TEMPLATE
 
+DATASET_SIZE = 5000
+PARALLEL_DOWNLOAD_COUNT = 10
 IMAGE_DOWNLOAD_SIZE = 1024
 TRAIN_DATASET_PROPORTION = 0.8
 
@@ -33,7 +37,7 @@ def load_metadata():
         return json.load(file)
 
 
-def create_random_database_subset(dataset, size=5000):
+def create_random_database_subset(dataset, size=DATASET_SIZE):
     images = dataset["images"]
     images = list(filter(lambda image: not (image["width"] == 800 and image["height"] == 584), images))
     return random.sample(images, size)
@@ -68,13 +72,12 @@ async def fetch_or_move(sema, directory, filename):
     if os.path.exists(filepath):
         return
 
-    async with sema:
-        tmp_filepath = join(DATASET_TEMP_IMAGES, filename)
-        if os.path.exists(tmp_filepath):
-            os.rename(tmp_filepath, filepath)
-            return
+    tmp_filepath = join(DATASET_TEMP_IMAGES, filename)
+    if os.path.exists(tmp_filepath):
+        os.rename(tmp_filepath, filepath)
+        return
 
-        await fetch_file_from_blob(filename, target_directory)
+    await fetch_file_from_blob(filename, target_directory, sema)
 
 
 def create_train_and_test_devision():
@@ -147,7 +150,7 @@ def download_files():
     os.makedirs(DATASET_TEMP_IMAGES, exist_ok=True)
     images = load_filenames()
 
-    sema = asyncio.BoundedSemaphore(10)
+    sema = asyncio.BoundedSemaphore(PARALLEL_DOWNLOAD_COUNT)
     tasks = [fetch_file_from_blob(filename, DATASET_TEMP_IMAGES, sema) for filename in images]
     asyncio.run(wrap_in_progress_bar(tasks))
 
@@ -180,7 +183,7 @@ if __name__ == '__main__':
     os.makedirs(DATASET_TRAIN_B, exist_ok=True)
 
     dataset_subset = load_dataset_subset()
-    sema = asyncio.BoundedSemaphore(10)
+    sema = asyncio.BoundedSemaphore(PARALLEL_DOWNLOAD_COUNT)
     tasks = [
         fetch_or_move(sema, directory, filename)
         for directory, filenames in dataclasses.asdict(dataset_subset).items()
