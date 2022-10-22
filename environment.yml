@@ -55,6 +55,7 @@ dependencies:
     - brotlipy==0.7.0
     - certifi==2022.9.24
     - cffi==1.15.1
+    - chardet==4.0.0
     - cryptography==37.0.1
     - frozenlist==1.2.0
     - multidict==5.2.0
