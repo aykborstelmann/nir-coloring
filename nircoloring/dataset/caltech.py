@@ -80,7 +80,7 @@ async def fetch_or_move(sema, directory, filename):
     await fetch_file_from_blob(filename, target_directory, sema)
 
 
-def create_train_and_test_devision():
+def create_train_and_test_division():
     filenames = load_filenames()
     nir_images, rgb_images = divide_into_nir_and_rgb(filenames)
     dataset_subset = DatasetSubset(
@@ -176,7 +176,7 @@ def get_dimensions(filename):
 if __name__ == '__main__':
     if not os.path.exists(DATASET_TRAIN_TEST_SPLIT):
         create_dataset_subset_and_download()
-        create_train_and_test_devision()
+        create_train_and_test_division()
 
     os.makedirs(DATASET_TEST_A, exist_ok=True)
     os.makedirs(DATASET_TEST_B, exist_ok=True)
