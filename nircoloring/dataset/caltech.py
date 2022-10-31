@@ -106,7 +106,7 @@ def load_dataset_subset():
         return DatasetSubset(**json_file_as_dict)
 
 
-async def fetch_file_from_blob(filename, directory, sema=asyncio.BoundedSemaphore(1)):
+async def fetch_file_from_blob(filename, directory, sema=asyncio.BoundedSemaphore(1), scale_and_crop=True):
     filepath = os.path.join(directory, filename)
     if os.path.exists(filepath) and imghdr.what(filepath) == 'jpeg':
         return
@@ -119,7 +119,8 @@ async def fetch_file_from_blob(filename, directory, sema=asyncio.BoundedSemaphor
             downloader: StorageStreamDownloader = await client.download_blob()
             content = await downloader.readall()
             image = Image.open(io.BytesIO(content))
-            image = crop_and_scale_from_center(image)
+            if scale_and_crop:
+                image = crop_and_scale_from_center(image)
             image.save(buffer, format="JPEG")
         async with aiofiles.open(filepath, "wb") as outfile:
             await outfile.write(buffer.getbuffer())
