@@ -24,5 +24,5 @@ DATASET_METADATA_FILE = join(DATA_DIRECTORY, 'caltech_images.json')
 CALTECH_DOWNLOAD_IMAGE_URL_TEMPLATE = "https://lilablobssc.blob.core.windows.net/caltech-unzipped/cct_images/{filename}"
 
 
-def get_dataset_image_file(filename):
+def get_dataset_temp_image_file(filename):
     return abspath(join(DATASET_TEMP_IMAGES, filename))
