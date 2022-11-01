@@ -134,10 +134,9 @@ async def fetch_or_move(filename, directory, sema, in_place_transformation):
 
     tmp_filepath = join(DATASET_TEMP_IMAGES, filename)
     if os.path.exists(tmp_filepath):
-        img = Image.open(tmp_filepath)
-        img = in_place_transformation(img)
-
         async with sema:
+            img = Image.open(tmp_filepath)
+            img = in_place_transformation(img)
             await save_image(img, filepath)
             return
 
