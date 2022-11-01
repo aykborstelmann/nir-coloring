@@ -7,6 +7,7 @@ import json
 import os
 import random
 import tqdm.asyncio
+import pandas as pd
 from PIL import Image, ImageChops
 from azure.storage.blob.aio import BlobClient, StorageStreamDownloader
 from typing import List, Tuple, TypedDict
@@ -14,6 +15,8 @@ from typing import List, Tuple, TypedDict
 from nircoloring.config import DATASET_TRAIN_TEST_SPLIT, DATASET_METADATA_FILE, DATASET_SUBSET, DATA_DIRECTORY, \
     DATASET_TEMP_IMAGES, DATASET_OUT, DATASET_TEST_A, get_dataset_temp_image_file, DATASET_TEST_B, DATASET_TRAIN_A, \
     DATASET_TRAIN_B, CALTECH_DOWNLOAD_IMAGE_URL_TEMPLATE
+
+EXCLUDE_CATEGORIES = {30, 33, 97}
 
 DATASET_SIZE = 5000
 PARALLEL_DOWNLOAD_COUNT = 30
@@ -67,10 +70,22 @@ def create_dataset_subset_with_random_crop_boxes(train_a: List[str],
 
 
 def create_random_dataset_subset(dataset, size=DATASET_SIZE):
-    images = dataset["images"]
-    images = list(filter(lambda image: not (image["width"] == 800 and image["height"] == 584), images))
-    return random.sample(images, size)
+    images = pd.DataFrame(data=dataset["images"])
 
+    annotations = pd.DataFrame(data=dataset["annotations"])
+    annotations["has_animal"] = ~annotations["category_id"].isin(EXCLUDE_CATEGORIES)
+    animal_occurrences = annotations.groupby("image_id")["has_animal"].any()
+
+    images = images.merge(animal_occurrences, how="left", left_on="id", right_on="image_id")
+    images = images[images["has_animal"]]
+
+    images = images[~((images["width"] == 800) & (images["height"] == 584))]
+
+    location_occurrences = images.groupby("location").size()
+    weights = 1 / location_occurrences.rename("weight")
+    images = images.merge(weights, how="left", on="location")
+
+    return images.sample(size, weights="weight")
 
 def is_nir_image(filename):
     img = Image.open(get_dataset_temp_image_file(filename))
@@ -117,7 +132,7 @@ def load_metadata():
 def create_random_image_filename_subset_and_save():
     metadata = load_metadata()
     subset = create_random_dataset_subset(metadata)
-    filenames = map(lambda data: data["file_name"].strip(), subset)
+    filenames = subset["file_name"].str.strip()
 
     os.makedirs(DATASET_OUT, exist_ok=True)
     with open(DATASET_SUBSET, "w+") as file:
