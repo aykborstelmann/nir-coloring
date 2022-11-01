@@ -37,18 +37,18 @@ class DatasetSubset(TypedDict):
 
 
 def create_random_crop_box(filename):
-    img = Image.open(get_dataset_temp_image_file(filename))
-    crop_size = min(img.width, img.height)
+    with Image.open(get_dataset_temp_image_file(filename)) as img:
+        crop_size = min(img.width, img.height)
 
-    x_random = random.randrange(0, img.width - crop_size) if img.width - crop_size > 0 else 0
-    y_random = random.randrange(0, img.height - crop_size) if img.height - crop_size > 0 else 0
+        x_random = random.randrange(0, img.width - crop_size) if img.width - crop_size > 0 else 0
+        y_random = random.randrange(0, img.height - crop_size) if img.height - crop_size > 0 else 0
 
-    left = x_random
-    top = y_random
-    right = crop_size + x_random
-    bottom = crop_size + y_random
+        left = x_random
+        top = y_random
+        right = crop_size + x_random
+        bottom = crop_size + y_random
 
-    return left, top, right, bottom
+        return left, top, right, bottom
 
 
 def create_dataset_subset_with_random_crop_boxes(train_a: List[str],
@@ -88,14 +88,14 @@ def create_random_dataset_subset(dataset, size=DATASET_SIZE):
     return images.sample(size, weights="weight")
 
 def is_nir_image(filename):
-    img = Image.open(get_dataset_temp_image_file(filename))
-    r, g, b = img.split()
-    return ImageChops.difference(r, g).getbbox() is None and ImageChops.difference(g, b).getbbox() is None
+    with Image.open(get_dataset_temp_image_file(filename)) as img:
+        r, g, b = img.split()
+        return ImageChops.difference(r, g).getbbox() is None and ImageChops.difference(g, b).getbbox() is None
 
 
 def get_dimensions(filename):
-    img = Image.open(get_dataset_temp_image_file(filename))
-    return f"{img.size[0]}x{img.size[1]}"
+    with Image.open(get_dataset_temp_image_file(filename)) as img:
+        return f"{img.size[0]}x{img.size[1]}"
 
 
 def remove_header_and_footer(img):
@@ -150,10 +150,10 @@ async def fetch_or_move(filename, directory, sema, in_place_transformation):
     tmp_filepath = join(DATASET_TEMP_IMAGES, filename)
     if os.path.exists(tmp_filepath):
         async with sema:
-            img = Image.open(tmp_filepath)
-            img = in_place_transformation(img)
-            await save_image(img, filepath)
-            return
+            with Image.open(tmp_filepath) as img:
+                img = in_place_transformation(img)
+                await save_image(img, filepath)
+                return
 
     await fetch_file_from_blob(filename, target_directory, sema, in_place_transformation)
 
@@ -202,7 +202,8 @@ async def fetch_file_from_blob(filename,
         async with BlobClient.from_blob_url(blob_url) as client:
             downloader: StorageStreamDownloader = await client.download_blob()
             content = await downloader.readall()
-            image = Image.open(io.BytesIO(content))
+
+        with Image.open(io.BytesIO(content)) as image:
             image = remove_header_and_footer(image)
             if callable(in_place_transformation):
                 image = in_place_transformation(image)
