@@ -159,11 +159,10 @@ async def fetch_or_move(filename, directory, sema, in_place_transformation):
 
 
 async def save_image(img, filepath):
-    buffer = io.BytesIO()
-    img.save(buffer, format="JPEG")
-    async with aiofiles.open(filepath, "wb") as outfile:
-        await outfile.write(buffer.getbuffer())
-
+    with io.BytesIO() as buffer:
+        img.save(buffer, format="JPEG")
+        async with aiofiles.open(filepath, "wb") as outfile:
+            await outfile.write(buffer.getbuffer())
 
 def create_train_and_test_division(filenames=None):
     if filenames is None:
@@ -203,7 +202,7 @@ async def fetch_file_from_blob(filename,
             downloader: StorageStreamDownloader = await client.download_blob()
             content = await downloader.readall()
 
-        with Image.open(io.BytesIO(content)) as image:
+        with io.BytesIO(content) as buffer, Image.open(buffer) as image:
             image = remove_header_and_footer(image)
             if callable(in_place_transformation):
                 image = in_place_transformation(image)
