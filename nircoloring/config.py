@@ -10,7 +10,7 @@ ROOT_DIR = os.path.join(os.path.dirname(abspath(__file__)), os.pardir)
 DATASET_TEMP = os.getenv("DATESET_TEMP") if os.getenv("DATESET_TEMP") is not None else join(ROOT_DIR, "tmp/dataset")
 DATASET_TEMP_IMAGES = join(DATASET_TEMP, "images")
 
-DATASET_OUT = os.getenv("DATASET_OUT") if os.getenv("DATASET_OUT") is not None else join(ROOT_DIR, "../pytorch-CycleGAN-and-pix2pix", "datasets/caltech")
+DATASET_OUT = os.getenv("DATASET_OUT") if os.getenv("DATASET_OUT") is not None else join(ROOT_DIR, "../CycleGAN", "datasets/caltech")
 DATASET_TRAIN_A = join(DATASET_OUT, "trainA")
 DATASET_TRAIN_B = join(DATASET_OUT, "trainB")
 DATASET_TEST_A = join(DATASET_OUT, "testA")
