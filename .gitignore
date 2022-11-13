@@ -13,3 +13,5 @@
 tmp/dataset
 .idea/
 data/dataset/caltech_images.json
+.env
+__pycache__
