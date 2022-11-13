@@ -1,0 +1,3 @@
+[submodule "cycle-gan"]
+	path = cycle-gan
+	url = git@github.com:aykborstelmann/CycleGAN.git
