@@ -15,8 +15,9 @@ if [ "$1" = "test" ]; then
 
   rsync -v -r "$DEFAULT_REMOTE":"$REMOTE_REPO_PATH"/cycle-gan/results/ "$CYCLE_GAN_DIR"/results
   rsync -v -r "$DEFAULT_REMOTE":"$REMOTE_REPO_PATH"/cycle-gan/results-large/ "$CYCLE_GAN_DIR"/results-large
-  rsync -v -r "$DEFAULT_REMOTE":"$REMOTE_REPO_PATH"/cycle-gan/checkpoints/ "$CYCLE_GAN_DIR"/checkpoints
 
   find "$CYCLE_GAN_DIR"/results/"$2"/test_*/index.html | sort | xargs -n 1 xdg-open
   find "$CYCLE_GAN_DIR"/results-large/"$2"/test_*/index.html | sort | xargs -n 1 xdg-open
+
+  rsync -v -r "$DEFAULT_REMOTE":"$REMOTE_REPO_PATH"/cycle-gan/checkpoints/ "$CYCLE_GAN_DIR"/checkpoints
 fi
