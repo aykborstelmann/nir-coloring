@@ -18,7 +18,13 @@ DATASET_METADATA_FILE = join(DATA_DIRECTORY, 'caltech_images.json')
 
 CALTECH_NIR_DATASET_OUT = os.getenv("DATASET_OUT") if os.getenv("DATASET_OUT") is not None else join(CYCLE_GAN_DIR, "datasets/caltech")
 CALTECH_NIR_DATASET_SPECIFICATION = join(DATA_DIRECTORY, "nir_dataset_spec.json")
+
+CALTECH_NIR_INCANDESCENT_DATASET_OUT = os.getenv("DATASET_OUT") if os.getenv("DATASET_OUT") is not None else join(CYCLE_GAN_DIR, "datasets/caltech-incandescent")
+CALTECH_NIR_INCANDESCENT_DATASET_SPECIFICATION = join(DATA_DIRECTORY, "nir_incandescent_dataset_spec.json")
+
 CALTECH_GRAY_DATASET_OUT = os.getenv("DATASET_OUT") if os.getenv("DATASET_OUT") is not None else join(CYCLE_GAN_DIR, "datasets/caltech-gray")
 CALTECH_GRAY_DATASET_SPECIFICATION = join(DATA_DIRECTORY, "gray_dataset_spec.json")
 
 CALTECH_DOWNLOAD_IMAGE_URL_TEMPLATE = "https://lilablobssc.blob.core.windows.net/caltech-unzipped/cct_images/{filename}"
+
+SUNRISE_API_URL = "https://api.sunrise-sunset.org/json?lat=34&lng=110&date=2011-03-22"

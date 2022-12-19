@@ -13,8 +13,13 @@ from PIL import Image, ImageChops
 from azure.storage.blob.aio import BlobClient, StorageStreamDownloader
 from typing import List, Tuple, TypedDict
 
+from astral import LocationInfo
+from astral.sun import sun
+import datetime
+
 from nircoloring.config import CALTECH_NIR_DATASET_SPECIFICATION, DATASET_METADATA_FILE, DATASET_TEMP_IMAGES, \
     CALTECH_NIR_DATASET_OUT, CALTECH_GRAY_DATASET_OUT, CALTECH_GRAY_DATASET_SPECIFICATION, \
+    CALTECH_NIR_INCANDESCENT_DATASET_OUT, CALTECH_NIR_INCANDESCENT_DATASET_SPECIFICATION, \
     CALTECH_DOWNLOAD_IMAGE_URL_TEMPLATE
 
 EXCLUDE_CATEGORIES = {30, 33, 97}
@@ -23,6 +28,10 @@ DATASET_SIZE = 5000
 PARALLEL_DOWNLOAD_COUNT = 30
 IMAGE_DOWNLOAD_SIZE = 1024
 TRAIN_DATASET_PROPORTION = 0.8
+SOUTH_WEST_US_SUNSET_LATEST_LNG = -117
+SOUTH_WEST_US_SUNSET_LATEST_LAT = 39
+SOUTH_WEST_US_SUNRISE_EARLIEST_LNG = -104
+SOUTH_WEST_US_SUNRISE_EARLIEST_LAT = 29
 
 
 class DatasetEntry(TypedDict):
@@ -37,25 +46,6 @@ class DatasetSubset(TypedDict):
     testB: List[DatasetEntry]
     valA: List[DatasetEntry]
     valB: List[DatasetEntry]
-
-
-def create_weighted_and_filtered_meta_dataset(dataset):
-    images = pd.DataFrame(data=dataset["images"])
-
-    annotations = pd.DataFrame(data=dataset["annotations"])
-    annotations["has_animal"] = ~annotations["category_id"].isin(EXCLUDE_CATEGORIES)
-    animal_occurrences = annotations.groupby("image_id")["has_animal"].any()
-
-    images = images.merge(animal_occurrences, how="left", left_on="id", right_on="image_id")
-    images = images[images["has_animal"]]
-
-    images = images[~((images["width"] == 800) & (images["height"] == 584))]
-
-    location_occurrences = images.groupby("location").size()
-    weights = 1 / location_occurrences.rename("weight")
-    images = images.merge(weights, how="left", on="location")
-
-    return images
 
 
 def convert_to_grayscale(img: Image.Image):
@@ -196,6 +186,27 @@ class CaltechDatasetGenerator:
             r, g, b = img.split()
         return ImageChops.difference(r, g).getbbox() is None and ImageChops.difference(g, b).getbbox() is None
 
+    def create_weighted_and_filtered_meta_dataset(self, dataset):
+        images = self.filter_dataset(dataset)
+        images = self.add_weights(images)
+        return images
+
+    def filter_dataset(self, dataset):
+        images = pd.DataFrame(data=dataset["images"])
+        annotations = pd.DataFrame(data=dataset["annotations"])
+        annotations["has_animal"] = ~annotations["category_id"].isin(EXCLUDE_CATEGORIES)
+        animal_occurrences = annotations.groupby("image_id")["has_animal"].any()
+        images = images.merge(animal_occurrences, how="left", left_on="id", right_on="image_id")
+        images = images[images["has_animal"]]
+        images = images[~((images["width"] == 800) & (images["height"] == 584))]
+        return images
+
+    def add_weights(self, images):
+        location_occurrences = images.groupby("location").size()
+        weights = 1 / location_occurrences.rename("weight")
+        images = images.merge(weights, how="left", on="location")
+        return images
+
 
 class CaltechUnalignedNirRgbDatasetGenerator(CaltechDatasetGenerator):
 
@@ -219,7 +230,7 @@ class CaltechUnalignedNirRgbDatasetGenerator(CaltechDatasetGenerator):
         nir_images = []
 
         metadata = load_metadata()
-        metadata = create_weighted_and_filtered_meta_dataset(metadata)
+        metadata = self.create_weighted_and_filtered_meta_dataset(metadata)
 
         sampler = self.sampler(metadata)
 
@@ -243,7 +254,47 @@ class CaltechUnalignedNirRgbDatasetGenerator(CaltechDatasetGenerator):
                 rgb_images.append(sample)
                 return
 
-            await self.sample_nir_or_rgb_image(sampler, nir_images, rgb_images)
+        await self.sample_nir_or_rgb_image(sampler, nir_images, rgb_images)
+
+
+def is_in_night(dt: datetime.datetime, sunrise_location: LocationInfo, sunset_location: LocationInfo):
+    dawn = sun(sunrise_location.observer, date=dt.date(), tzinfo=sunrise_location.tzinfo)["dawn"]
+    dawn -= datetime.timedelta(hours=1)
+
+    dusk = sun(sunset_location.observer, date=dt.date(), tzinfo=sunset_location.tzinfo)["dusk"]
+    dusk += datetime.timedelta(hours=1)
+
+    return dt < dawn or dt > dusk
+
+
+class CaltechUnalignedNirIncandescentRgbDatasetGenerator(CaltechUnalignedNirRgbDatasetGenerator):
+
+    def __init__(self, seed, n, train_fraction, test_fraction, val_fraction, temp_dir,
+                 sunrise_location: LocationInfo, sunset_location: LocationInfo) -> None:
+        super().__init__(seed, n, train_fraction, test_fraction, val_fraction, temp_dir)
+
+        self.sunriseLocation = sunrise_location
+        self.sunsetLocation = sunset_location
+
+    def filter_dataset(self, dataset):
+        images = super().filter_dataset(dataset)
+
+        images["date_captured"] = pd.to_datetime(images["date_captured"], errors="coerce").dt.tz_localize(
+            self.sunriseLocation.timezone,
+            ambiguous="NaT",
+            nonexistent="NaT")
+        images.dropna(subset=["date_captured"], inplace=True)
+
+        return images
+
+    def add_weights(self, images):
+        images = super().add_weights(images)
+
+        is_night = images.date_captured.apply(is_in_night, sunrise_location=self.sunriseLocation,
+                                              sunset_location=self.sunsetLocation)
+        images["weight"] += images["weight"] * 10000 * is_night
+
+        return images
 
 
 class CaltechUnalignedGrayRgbDatasetGenerator(CaltechDatasetGenerator):
@@ -268,7 +319,7 @@ class CaltechUnalignedGrayRgbDatasetGenerator(CaltechDatasetGenerator):
 
     def find_rgb_images(self) -> list[str]:
         metadata = load_metadata()
-        metadata = create_weighted_and_filtered_meta_dataset(metadata)
+        metadata = self.create_weighted_and_filtered_meta_dataset(metadata)
 
         sampler = self.sampler(metadata)
 
@@ -367,5 +418,19 @@ if __name__ == '__main__':
                                                               CALTECH_GRAY_DATASET_SPECIFICATION,
                                                               gray_dataset_generator)
 
+    southWestUsSunset = LocationInfo("South West US", "US", "US/Pacific", SOUTH_WEST_US_SUNSET_LATEST_LAT,
+                                     SOUTH_WEST_US_SUNSET_LATEST_LNG)
+    southWestUsSunrise = LocationInfo("South West US", "US", "US/Pacific", SOUTH_WEST_US_SUNRISE_EARLIEST_LAT,
+                                      SOUTH_WEST_US_SUNRISE_EARLIEST_LNG)
+    nir_incandescent_dataset_generator = CaltechUnalignedNirIncandescentRgbDatasetGenerator(10, 5000, 0.8, 0.1, 0.1,
+                                                                                            DATASET_TEMP_IMAGES,
+                                                                                            southWestUsSunrise,
+                                                                                            southWestUsSunset)
+    nir_incandescent_dataset_downloader = CaltechDatasetDownloader(DATASET_TEMP_IMAGES,
+                                                                   CALTECH_NIR_INCANDESCENT_DATASET_OUT,
+                                                                   CALTECH_NIR_INCANDESCENT_DATASET_SPECIFICATION,
+                                                                   nir_incandescent_dataset_generator)
+
     nir_dataset_downloader.download_dataset()
     gray_dataset_downloader.download_dataset()
+    nir_incandescent_dataset_downloader.download_dataset()
