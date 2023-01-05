@@ -21,13 +21,13 @@ from astral import LocationInfo
 from astral.sun import sun
 import datetime
 
-from config import SNAPSHOT_SERENGETI_DOWNLOAD_IMAGE_URL_TEMPLATE, SERENGETI_NIR_INCANDESCENT_DATASET_OUT, \
-    SERENGETI_NIR_INCANDESCENT_DATASET_SPECIFICATION, \
-    SNAPSHOT_SERENGETI_DATASET_METADATA_FILES
 from nircoloring.config import CALTECH_NIR_DATASET_SPECIFICATION, CALTECH_DATASET_METADATA_FILE, DATASET_TEMP_IMAGES, \
     CALTECH_NIR_DATASET_OUT, CALTECH_GRAY_DATASET_OUT, CALTECH_GRAY_DATASET_SPECIFICATION, \
     CALTECH_NIR_INCANDESCENT_DATASET_OUT, CALTECH_NIR_INCANDESCENT_DATASET_SPECIFICATION, \
-    CALTECH_DOWNLOAD_IMAGE_URL_TEMPLATE
+    CALTECH_DOWNLOAD_IMAGE_URL_TEMPLATE, SNAPSHOT_SERENGETI_DOWNLOAD_IMAGE_URL_TEMPLATE, \
+    SERENGETI_NIR_INCANDESCENT_DATASET_OUT, \
+    SERENGETI_NIR_INCANDESCENT_DATASET_SPECIFICATION, \
+    SNAPSHOT_SERENGETI_DATASET_METADATA_FILES
 
 CALTECH_EXCLUDE_CATEGORIES = {30, 33, 97}
 SERENGETI_EXCLUDE_CATEGORIES = {0, 1}
@@ -470,7 +470,8 @@ class UnalignedGrayRgbDatasetGenerator(DatasetGenerator):
 
 class DatasetDownloader:
 
-    def __init__(self, temp_directory, target_directory, dataset_information_file, meta_data_source: AbstractMetaDataSource,
+    def __init__(self, temp_directory, target_directory, dataset_information_file,
+                 meta_data_source: AbstractMetaDataSource,
                  dataset_generator: DatasetGenerator = None) -> None:
         super().__init__()
         self.meta_data_source = meta_data_source
