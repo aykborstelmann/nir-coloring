@@ -8,14 +8,14 @@ import tempfile
 from PIL import Image
 from astral import LocationInfo
 
-from dataset.caltech import CaltechDatasetDownloader, DatasetSubset, DatasetEntry, IMAGE_DOWNLOAD_SIZE, \
-    CaltechUnalignedNirRgbDatasetGenerator, CaltechUnalignedGrayRgbDatasetGenerator, \
-    is_nir_image, CaltechUnalignedNirIncandescentRgbDatasetGenerator, \
+from dataset.caltech import DatasetDownloader, DatasetSubset, DatasetEntry, IMAGE_DOWNLOAD_SIZE, \
+    UnalignedNirRgbDatasetGenerator, UnalignedGrayRgbDatasetGenerator, \
+    is_nir_image, UnalignedNirWeightedIncandescentRgbDatasetGenerator, \
     SOUTH_WEST_US_SUNSET_LATEST_LAT, SOUTH_WEST_US_SUNSET_LATEST_LNG, SOUTH_WEST_US_SUNRISE_EARLIEST_LNG, \
-    SOUTH_WEST_US_SUNRISE_EARLIEST_LAT
+    SOUTH_WEST_US_SUNRISE_EARLIEST_LAT, CaltechMetaDataSource
 
 
-class CaltechDatasetDownloaderTest(TestCase):
+class DatasetDownloaderTest(TestCase):
 
     def setUp(self) -> None:
         super().setUp()
@@ -24,8 +24,9 @@ class CaltechDatasetDownloaderTest(TestCase):
         self.target_directory = join(self.test_dir, "target/")
         self.temp_directory = join(self.test_dir, "tmp/")
         self.dataset_generator = mock.Mock()
-        self.downloader = CaltechDatasetDownloader(self.temp_directory, self.target_directory, self.train_split_file,
-                                                   self.dataset_generator)
+        self.downloader = CaltechMetaDataSource()
+        self.dataset_downloader = DatasetDownloader(self.temp_directory, self.target_directory, self.train_split_file,
+                                                    self.downloader, self.dataset_generator)
 
     def tearDown(self) -> None:
         shutil.rmtree(self.test_dir)
@@ -37,11 +38,11 @@ class CaltechDatasetDownloaderTest(TestCase):
 
         self.dataset_generator.generate.return_value = dataset_subset
 
-        self.downloader.create_or_load_dataset_subset()
+        self.dataset_downloader.create_or_load_dataset_subset()
 
         self.assertTrue(self.dataset_generator.generate.called)
         self.assertTrue(os.path.exists(self.train_split_file))
-        self.assertEquals(json.dumps(self.downloader.dataset_subset), json.dumps(dataset_subset))
+        self.assertEquals(json.dumps(self.dataset_downloader.dataset_subset), json.dumps(dataset_subset))
 
     def test_load_subset(self):
         os.makedirs(os.path.dirname(self.train_split_file), exist_ok=True)
@@ -53,8 +54,8 @@ class CaltechDatasetDownloaderTest(TestCase):
         with open(self.train_split_file, "w+") as file:
             file.write(json.dumps(dataset_subset))
 
-        self.downloader.create_or_load_dataset_subset()
-        self.assertEquals(json.dumps(self.downloader.dataset_subset), json.dumps(dataset_subset))
+        self.dataset_downloader.create_or_load_dataset_subset()
+        self.assertEquals(json.dumps(self.dataset_downloader.dataset_subset), json.dumps(dataset_subset))
 
     def test_download_dataset(self):
         os.makedirs(os.path.dirname(self.train_split_file), exist_ok=True)
@@ -67,7 +68,7 @@ class CaltechDatasetDownloaderTest(TestCase):
         with open(self.train_split_file, "w+") as file:
             file.write(json.dumps(dataset_subset))
 
-        self.downloader.download_dataset()
+        self.dataset_downloader.download_dataset()
 
         filepath = join(self.target_directory, "trainA", filename)
         self.assertTrue(os.path.exists(filepath))
@@ -75,12 +76,14 @@ class CaltechDatasetDownloaderTest(TestCase):
             self.assertEquals(img.size, (IMAGE_DOWNLOAD_SIZE, IMAGE_DOWNLOAD_SIZE))
 
 
-class CaltechUnalignedNirRgbDatasetGeneratorTest(TestCase):
+class UnalignedNirRgbDatasetGeneratorTest(TestCase):
     def setUp(self) -> None:
         super().setUp()
         self.test_dir = tempfile.mkdtemp()
         self.n = 10
-        self.generator = CaltechUnalignedNirRgbDatasetGenerator(1, self.n, 0.6, 0.2, 0.2, self.test_dir)
+        self.downloader = CaltechMetaDataSource()
+        self.generator = UnalignedNirRgbDatasetGenerator(1, self.n, 0.6, 0.2, 0.2, self.test_dir,
+                                                         self.downloader)
 
     def test_find_rgb_and_nir_images(self):
         nir_images, rgb_images = self.generator.find_nir_and_rgb_images()
@@ -120,19 +123,21 @@ class CaltechUnalignedNirRgbDatasetGeneratorTest(TestCase):
             assert not is_nir_image(filepath)
 
 
-class CaltechUnalignedNirIncandescentRgbDatasetGeneratorTest(TestCase):
+class UnalignedNirIncandescentRgbDatasetGeneratorTest(TestCase):
 
     def setUp(self) -> None:
         super().setUp()
         self.test_dir = tempfile.mkdtemp()
         self.n = 10
 
+        self.downloader = CaltechMetaDataSource()
         self.southWestUsSunset = LocationInfo("South West US", "US", "US/Pacific", SOUTH_WEST_US_SUNSET_LATEST_LAT,
                                               SOUTH_WEST_US_SUNSET_LATEST_LNG)
         self.southWestUsSunrise = LocationInfo("South West US", "US", "US/Pacific", SOUTH_WEST_US_SUNRISE_EARLIEST_LAT,
                                                SOUTH_WEST_US_SUNRISE_EARLIEST_LNG)
-        self.generator = CaltechUnalignedNirIncandescentRgbDatasetGenerator(1, self.n, 0.6, 0.2, 0.2, self.test_dir,
-                                                                            self.southWestUsSunrise, self.southWestUsSunset)
+        self.generator = UnalignedNirWeightedIncandescentRgbDatasetGenerator(1, self.n, 0.6, 0.2, 0.2, self.test_dir,
+                                                                             self.downloader, self.southWestUsSunrise,
+                                                                             self.southWestUsSunset)
 
     def tearDown(self) -> None:
         shutil.rmtree(self.test_dir)
@@ -175,13 +180,15 @@ class CaltechUnalignedNirIncandescentRgbDatasetGeneratorTest(TestCase):
             assert not is_nir_image(filepath)
 
 
-class CaltechUnalignedGrayRgbDatasetGeneratorTest(TestCase):
+class UnalignedGrayRgbDatasetGeneratorTest(TestCase):
 
     def setUp(self) -> None:
         super().setUp()
         self.test_dir = tempfile.mkdtemp()
         self.n = 10
-        self.generator = CaltechUnalignedGrayRgbDatasetGenerator(1, self.n, 0.6, 0.2, 0.2, self.test_dir)
+        self.downloader = CaltechMetaDataSource()
+        self.generator = UnalignedGrayRgbDatasetGenerator(1, self.n, 0.6, 0.2, 0.2, self.test_dir,
+                                                          self.downloader)
 
     def tearDown(self) -> None:
         shutil.rmtree(self.test_dir)
