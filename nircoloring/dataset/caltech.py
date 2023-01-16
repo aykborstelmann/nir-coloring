@@ -13,7 +13,8 @@ import pandas as pd
 import random
 import tqdm.asyncio
 from PIL import Image, ImageChops
-from azure.core.exceptions import ResourceNotFoundError
+from aiohttp import ServerTimeoutError
+from azure.core.exceptions import ResourceNotFoundError, ServiceRequestError
 from azure.storage.blob.aio import BlobClient, StorageStreamDownloader
 from typing import List, Tuple, TypedDict
 
@@ -27,13 +28,14 @@ from nircoloring.config import CALTECH_NIR_DATASET_SPECIFICATION, CALTECH_DATASE
     CALTECH_DOWNLOAD_IMAGE_URL_TEMPLATE, SNAPSHOT_SERENGETI_DOWNLOAD_IMAGE_URL_TEMPLATE, \
     SERENGETI_NIR_INCANDESCENT_DATASET_OUT, \
     SERENGETI_NIR_INCANDESCENT_DATASET_SPECIFICATION, \
-    SNAPSHOT_SERENGETI_DATASET_METADATA_FILES
+    SNAPSHOT_SERENGETI_DATASET_METADATA_FILES, SERENGETI_NIR_INCANDESCENT_SPLIT_DATASET_OUT, \
+    SERENGETI_NIR_INCANDESCENT_SPLIT_DATASET_SPECIFICATION
 
 CALTECH_EXCLUDE_CATEGORIES = {30, 33, 97}
 SERENGETI_EXCLUDE_CATEGORIES = {0, 1}
 
 DATASET_SIZE = 5000
-PARALLEL_DOWNLOAD_COUNT = 30
+PARALLEL_DOWNLOAD_COUNT = 100
 IMAGE_DOWNLOAD_SIZE = 1024
 TRAIN_DATASET_PROPORTION = 0.8
 
@@ -232,6 +234,7 @@ class DatasetGenerator(abc.ABC):
 
         self.sema = asyncio.BoundedSemaphore(PARALLEL_DOWNLOAD_COUNT)
         self.meta_data_source = meta_data_source
+        self.metadata = None
 
     @abstractmethod
     def generate(self) -> DatasetSubset:
@@ -276,10 +279,10 @@ class DatasetGenerator(abc.ABC):
     async def download_sample(self, sample: str):
         await self.meta_data_source.download_file_from_blob(sample, join(self.temp_dir, sample))
 
-    def sampler(self, metadata):
-        while len(metadata) > 0:
-            sample = metadata.sample(weights="weight", random_state=self.seed)
-            metadata.drop(index=sample.index, inplace=True)
+    def sampler(self):
+        while len(self.metadata) > 0:
+            sample = self.metadata.sample(weights="weight", random_state=self.seed)
+            self.metadata.drop(index=sample.index, inplace=True)
             filename, = sample["file_name"]
             yield filename
 
@@ -305,6 +308,11 @@ class DatasetGenerator(abc.ABC):
 
 class UnalignedNirRgbDatasetGenerator(DatasetGenerator):
 
+    def __init__(self, seed, n, train_fraction, test_fraction, val_fraction, temp_dir,
+                 meta_data_source: AbstractMetaDataSource):
+        super().__init__(seed, n, train_fraction, test_fraction, val_fraction, temp_dir, meta_data_source)
+        self.metadata = None
+
     def generate(self):
         nir_images, rgb_images = self.find_nir_and_rgb_images()
 
@@ -324,10 +332,10 @@ class UnalignedNirRgbDatasetGenerator(DatasetGenerator):
         rgb_images = []
         nir_images = []
 
-        metadata = self.meta_data_source.load_images()
-        metadata = self.create_weighted_and_filtered_meta_dataset(metadata)
+        self.metadata = self.meta_data_source.load_images()
+        self.metadata = self.create_weighted_and_filtered_meta_dataset(self.metadata)
 
-        sampler = self.sampler(metadata)
+        sampler = self.sampler()
 
         tasks = [self.sample_nir_or_rgb_image(sampler, nir_images, rgb_images) for _ in range(self.n)]
 
@@ -362,10 +370,8 @@ class UnalignedNirRgbDatasetGenerator(DatasetGenerator):
 
 def is_in_night(dt: datetime.datetime, sunrise_location: LocationInfo, sunset_location: LocationInfo):
     dawn = sun(sunrise_location.observer, date=dt.date(), tzinfo=sunrise_location.tzinfo)["dawn"]
-    dawn -= datetime.timedelta(hours=1)
 
     dusk = sun(sunset_location.observer, date=dt.date(), tzinfo=sunset_location.tzinfo)["dusk"]
-    dusk += datetime.timedelta(hours=1)
 
     return dt < dawn or dt > dusk
 
@@ -399,6 +405,102 @@ class UnalignedNirWeightedIncandescentRgbDatasetGenerator(UnalignedNirRgbDataset
         images["weight"] += images["weight"] * 10000 * is_night
 
         return images
+
+
+class UnalignedNirSplitIncandescentRgbDatasetGenerator(UnalignedNirRgbDatasetGenerator):
+
+    def __init__(self, seed, n, train_fraction, test_fraction, val_fraction, temp_dir,
+                 meta_data_source: AbstractMetaDataSource,
+                 sunrise_location: LocationInfo, sunset_location: LocationInfo) -> None:
+        super().__init__(seed, n, train_fraction, test_fraction, val_fraction, temp_dir, meta_data_source)
+
+        self.preferred_nir_images = None
+        self.removed_day_images = False
+        self.removed_night_images = False
+        self.sunriseLocation = sunrise_location
+        self.sunsetLocation = sunset_location
+
+    def filter_dataset(self, images):
+        images = super().filter_dataset(images)
+
+        images["datetime"] = pd.to_datetime(images["datetime"], errors="coerce").dt.tz_localize(
+            self.sunriseLocation.timezone,
+            ambiguous="NaT",
+            nonexistent="NaT")
+        images.dropna(subset=["datetime"], inplace=True)
+
+        images["is_night"] = images.datetime.apply(is_in_night, sunrise_location=self.sunriseLocation,
+                                                   sunset_location=self.sunsetLocation)
+        return images
+
+    def find_nir_and_rgb_images(self):
+        rgb_day_images = []
+        rgb_night_images = []
+        nir_day_images = []
+        nir_night_images = []
+
+        self.metadata = self.meta_data_source.load_images()
+        self.metadata = self.create_weighted_and_filtered_meta_dataset(self.metadata)
+
+        sampler = self.sampler()
+
+        tasks = [self.sample_nir_or_rgb_image_day_and_night(sampler, nir_day_images, nir_night_images, rgb_day_images,
+                                                            rgb_night_images) for _ in range(self.n)]
+
+        asyncio.run(wrap_in_progress_bar(tasks, desc="Sampling & analzing dataset"))
+
+        return nir_day_images + nir_night_images, rgb_day_images + rgb_night_images
+
+    def sampler(self):
+        while len(self.metadata) > 0:
+            sample = self.metadata.sample(weights="weight", random_state=self.seed)
+            self.metadata.drop(index=sample.index, inplace=True)
+            filename, = sample["file_name"]
+            is_night, = sample["is_night"]
+            yield filename, is_night
+
+    async def sample_nir_or_rgb_image_day_and_night(self, sampler, nir_day_images, nir_night_images, rgb_day_images,
+                                                    rgb_night_images):
+        while True:
+            async with self.sema:
+                if len(nir_night_images) == int(self.n * 0.25) and len(rgb_night_images) == int(
+                        self.n * 0.25) and not self.removed_night_images:
+                    self.removed_night_images = True
+                    print("Remove night images")
+                    self.metadata = self.metadata[~self.metadata["is_night"].astype(bool)]
+
+                if len(nir_day_images) == int(self.n * 0.25) and len(rgb_day_images) == int(
+                        self.n * 0.25) and not self.removed_day_images:
+                    self.removed_day_images = True
+                    print("Remove day images")
+                    self.metadata = self.metadata[self.metadata["is_night"]]
+
+                sample, is_night_image = await self.sample_and_download(sampler)
+
+                is_nir_image = self.is_nir_image(sample)
+                if is_nir_image and not is_night_image and len(nir_day_images) < self.n * 0.25:
+                    nir_day_images.append(sample)
+                    return
+                elif is_nir_image and is_night_image and len(nir_night_images) < self.n * 0.25:
+                    nir_night_images.append(sample)
+                    return
+                elif not is_nir_image and not is_night_image and len(rgb_day_images) < self.n * 0.25:
+                    rgb_day_images.append(sample)
+                    return
+                elif not is_nir_image and is_night_image and len(rgb_night_images) < self.n * 0.25:
+                    rgb_night_images.append(sample)
+                    return
+
+    async def sample_and_download(self, sampler):
+        while True:
+            file_name, is_night = next(sampler)
+            try:
+                await self.download_sample(file_name)
+            except (ResourceNotFoundError, BufferError, ServiceRequestError, ServerTimeoutError) as e:
+                print(f"Could not download {file_name}, got {e}")
+                continue
+
+            return file_name, is_night
 
 
 class UnalignedFilteredNirIncandescentRgbDatasetGenerator(UnalignedNirRgbDatasetGenerator):
@@ -449,10 +551,10 @@ class UnalignedGrayRgbDatasetGenerator(DatasetGenerator):
         )
 
     def find_rgb_images(self) -> list[str]:
-        metadata = self.meta_data_source.load_images()
-        metadata = self.create_weighted_and_filtered_meta_dataset(metadata)
+        self.metadata = self.meta_data_source.load_images()
+        self.metadata = self.create_weighted_and_filtered_meta_dataset(self.metadata)
 
-        sampler = self.sampler(metadata)
+        sampler = self.sampler()
 
         tasks = [self.sample_rgb_image(sampler) for _ in range(self.n)]
         return asyncio.run(wrap_in_progress_bar(tasks, desc="Sampling & analzing dataset"))
@@ -585,6 +687,19 @@ if __name__ == '__main__':
                                                                       serengeti_downloader,
                                                                       serengeti_nir_incandescent_dataset_generator)
 
+    serengeti_nir_incandescent_split_dataset_generator = UnalignedNirSplitIncandescentRgbDatasetGenerator(10, 5000, 0.8,
+                                                                                                          0.1, 0.1,
+                                                                                                          DATASET_TEMP_IMAGES,
+                                                                                                          serengeti_downloader,
+                                                                                                          serengeti_location,
+                                                                                                          serengeti_location)
+    serengeti_nir_incandescent_split_dataset_downloader = DatasetDownloader(DATASET_TEMP_IMAGES,
+                                                                            SERENGETI_NIR_INCANDESCENT_SPLIT_DATASET_OUT,
+                                                                            SERENGETI_NIR_INCANDESCENT_SPLIT_DATASET_SPECIFICATION,
+                                                                            serengeti_downloader,
+                                                                            serengeti_nir_incandescent_split_dataset_generator)
+
     nir_dataset_downloader.download_dataset()
     gray_dataset_downloader.download_dataset()
     serengeti_nir_incandescent_dataset_downloader.download_dataset()
+    serengeti_nir_incandescent_split_dataset_downloader.download_dataset()

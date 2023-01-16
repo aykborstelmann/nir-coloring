@@ -34,6 +34,10 @@ SERENGETI_NIR_INCANDESCENT_DATASET_OUT = os.getenv("DATASET_OUT") if os.getenv("
     CYCLE_GAN_DIR, "datasets/serengeti-incandescent")
 SERENGETI_NIR_INCANDESCENT_DATASET_SPECIFICATION = join(DATA_DIRECTORY, "serengeti_incandescent_dataset_spec.json")
 
+SERENGETI_NIR_INCANDESCENT_SPLIT_DATASET_OUT = os.getenv("DATASET_OUT") if os.getenv("DATASET_OUT") is not None else join(
+    CYCLE_GAN_DIR, "datasets/serengeti")
+SERENGETI_NIR_INCANDESCENT_SPLIT_DATASET_SPECIFICATION = join(DATA_DIRECTORY, "serengeti_dataset_spec.json")
+
 CALTECH_DOWNLOAD_IMAGE_URL_TEMPLATE = "https://lilablobssc.blob.core.windows.net/caltech-unzipped/cct_images/{filename}"
 SNAPSHOT_SERENGETI_DOWNLOAD_IMAGE_URL_TEMPLATE = "https://lilablobssc.blob.core.windows.net/snapshotserengeti-unzipped/{filename}"
 
