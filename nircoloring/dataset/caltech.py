@@ -277,6 +277,7 @@ class DatasetGenerator(abc.ABC):
         }
 
     async def download_sample(self, sample: str):
+        await asyncio.sleep(0)
         await self.meta_data_source.download_file_from_blob(sample, join(self.temp_dir, sample))
 
     def sampler(self):
@@ -286,10 +287,15 @@ class DatasetGenerator(abc.ABC):
             filename, = sample["file_name"]
             yield filename
 
-    def is_nir_image(self, sample):
-        with Image.open(join(self.temp_dir, sample)) as img:
-            r, g, b = img.split()
-        return ImageChops.difference(r, g).getbbox() is None and ImageChops.difference(g, b).getbbox() is None
+    async def is_nir_image(self, sample):
+        def is_nir_image_blocking():
+            with Image.open(join(self.temp_dir, sample)) as img:
+                r, g, b = img.split()
+            return ImageChops.difference(r, g).getbbox() is None and ImageChops.difference(g, b).getbbox() is None
+
+        result, = await asyncio.gather(asyncio.to_thread(is_nir_image_blocking))
+        return result
+
 
     def create_weighted_and_filtered_meta_dataset(self, dataset: pd.DataFrame):
         images = self.filter_dataset(dataset)
@@ -348,7 +354,7 @@ class UnalignedNirRgbDatasetGenerator(DatasetGenerator):
             async with self.sema:
                 sample = await self.sample_and_download(sampler)
 
-                is_nir_image = self.is_nir_image(sample)
+                is_nir_image = await self.is_nir_image(sample)
                 if is_nir_image and len(nir_images) < self.n * 0.5:
                     nir_images.append(sample)
                     return
@@ -477,7 +483,7 @@ class UnalignedNirSplitIncandescentRgbDatasetGenerator(UnalignedNirRgbDatasetGen
 
                 sample, is_night_image = await self.sample_and_download(sampler)
 
-                is_nir_image = self.is_nir_image(sample)
+                is_nir_image = await self.is_nir_image(sample)
                 if is_nir_image and not is_night_image and len(nir_day_images) < self.n * 0.25:
                     nir_day_images.append(sample)
                     return
@@ -564,7 +570,7 @@ class UnalignedGrayRgbDatasetGenerator(DatasetGenerator):
             sample = next(sampler)
             await self.download_sample(sample)
 
-        if not self.is_nir_image(sample):
+        if not await self.is_nir_image(sample):
             return sample
 
         return await self.sample_rgb_image(sampler)
