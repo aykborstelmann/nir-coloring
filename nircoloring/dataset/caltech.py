@@ -106,7 +106,7 @@ async def fetch_file_from_blob(filename, target_file, url_template, sema=None,
     if not sema:
         sema = asyncio.BoundedSemaphore(1)
 
-    if os.path.exists(target_file) and imghdr.what(target_file) == 'jpeg':
+    if os.path.exists(target_file) and imghdr.what(target_file) == 'jpeg' and not is_corrupted(target_file):
         return
 
     blob_url = url_template.format(filename=filename)
@@ -121,6 +121,14 @@ async def fetch_file_from_blob(filename, target_file, url_template, sema=None,
                 image = in_place_transformation(image)
 
         await save_image(image, target_file)
+
+
+def is_corrupted(target_file):
+    try:
+        Image.open(target_file).verify()
+        return False
+    except:
+        return True
 
 
 async def wrap_in_progress_bar(tasks, **tqdm_arguments):
@@ -295,7 +303,6 @@ class DatasetGenerator(abc.ABC):
 
         result, = await asyncio.gather(asyncio.to_thread(is_nir_image_blocking))
         return result
-
 
     def create_weighted_and_filtered_meta_dataset(self, dataset: pd.DataFrame):
         images = self.filter_dataset(dataset)
@@ -710,5 +717,5 @@ if __name__ == '__main__':
 
     nir_dataset_downloader.download_dataset()
     gray_dataset_downloader.download_dataset()
-    #serengeti_nir_incandescent_dataset_downloader.download_dataset()
+    # serengeti_nir_incandescent_dataset_downloader.download_dataset()
     serengeti_nir_incandescent_split_dataset_downloader.download_dataset()
