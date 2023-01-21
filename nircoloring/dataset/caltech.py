@@ -35,7 +35,7 @@ CALTECH_EXCLUDE_CATEGORIES = {30, 33, 97}
 SERENGETI_EXCLUDE_CATEGORIES = {0, 1}
 
 DATASET_SIZE = 5000
-PARALLEL_DOWNLOAD_COUNT = 100
+PARALLEL_DOWNLOAD_COUNT = 30
 IMAGE_DOWNLOAD_SIZE = 1024
 TRAIN_DATASET_PROPORTION = 0.8
 
@@ -261,7 +261,7 @@ class DatasetGenerator(abc.ABC):
                                                      test_b: List[str],
                                                      val_a: List[str],
                                                      val_b: List[str]) -> DatasetSubset:
-        def to_dataset_entry_with_random_crop_box(filename) -> DatasetEntry:
+        def to_dataset_entry_with_random_crop_box(filename: str) -> DatasetEntry:
             return {
                 'filename': filename,
                 'crop_box': self.create_random_crop_box(filename)
@@ -603,13 +603,16 @@ class DatasetDownloader:
 
     async def move_from_temp_or_download(self, subdirectory, dataset_entry):
         filename = dataset_entry['filename']
+        filename_without_ext, ext = os.path.splitext(filename)
+        filename_with_lowercase_ext = filename_without_ext + ext.lower()
+
         in_place_transformation = self.create_transformation_function(subdirectory, dataset_entry)
 
-        filepath = join(self.target_directory, subdirectory, os.path.basename(filename))
+        filepath = join(self.target_directory, subdirectory, os.path.basename(filename_with_lowercase_ext))
         if os.path.exists(filepath):
             return
 
-        tmp_filepath = join(self.temp_directory, filename)
+        tmp_filepath = join(self.temp_directory, filename_with_lowercase_ext)
 
         if os.path.exists(tmp_filepath):
             async with self.sema:
@@ -707,5 +710,5 @@ if __name__ == '__main__':
 
     nir_dataset_downloader.download_dataset()
     gray_dataset_downloader.download_dataset()
-    serengeti_nir_incandescent_dataset_downloader.download_dataset()
+    #serengeti_nir_incandescent_dataset_downloader.download_dataset()
     serengeti_nir_incandescent_split_dataset_downloader.download_dataset()
