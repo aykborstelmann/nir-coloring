@@ -1,3 +1,5 @@
+import itertools
+
 import abc
 
 from abc import abstractmethod
@@ -460,9 +462,10 @@ class UnalignedNirSplitIncandescentRgbDatasetGenerator(UnalignedNirRgbDatasetGen
         tasks = [self.sample_nir_or_rgb_image_day_and_night(sampler, nir_day_images, nir_night_images, rgb_day_images,
                                                             rgb_night_images) for _ in range(self.n)]
 
-        asyncio.run(wrap_in_progress_bar(tasks, desc="Sampling & analzing dataset"))
-
-        return nir_day_images + nir_night_images, rgb_day_images + rgb_night_images
+        asyncio.run(wrap_in_progress_bar(tasks, desc="Sampling & analyzing dataset"))
+        nir_images = list(itertools.chain.from_iterable(zip(nir_day_images, nir_night_images)))
+        rgb_images = list(itertools.chain.from_iterable(zip(rgb_day_images, rgb_night_images)))
+        return nir_images, rgb_images
 
     def sampler(self):
         while len(self.metadata) > 0:

@@ -11,6 +11,7 @@ DATASET_TEMP_IMAGES = join(DATASET_TEMP, "images")
 
 CYCLE_GAN_DIR = join(ROOT_DIR, "cycle-gan")
 CYCLE_GAN_DIR_RESULTS = join(CYCLE_GAN_DIR, "results")
+CYCLE_GAN_DIR_CHECKPOINTS = join(CYCLE_GAN_DIR, "checkpoints")
 CYCLE_GAN_DIR_RESULTS_LARGE = join(CYCLE_GAN_DIR, "results-large")
 
 DATA_DIRECTORY = join(ROOT_DIR, "data/dataset")
