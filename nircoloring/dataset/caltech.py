@@ -718,7 +718,7 @@ if __name__ == '__main__':
                                                                             serengeti_downloader,
                                                                             serengeti_nir_incandescent_split_dataset_generator)
 
-    nir_dataset_downloader.download_dataset()
-    gray_dataset_downloader.download_dataset()
+    #nir_dataset_downloader.download_dataset()
+    #gray_dataset_downloader.download_dataset()
     # serengeti_nir_incandescent_dataset_downloader.download_dataset()
     serengeti_nir_incandescent_split_dataset_downloader.download_dataset()

@@ -7,13 +7,13 @@ find_in_conda_env(){
 }
 
 install_dependencies() {
-  if ! find_in_conda_env NIR_COLORING_ENV_PREFIX; then
-    XDG_CACHE_HOME=/tmp/.cache/ conda env create --prefix $NIR_COLORING_ENV_PREFIX --file "$ROOT_DIR/environment.yml";
-    conda develop -p $NIR_COLORING_ENV_PREFIX nir-coloring
+  if ! find_in_conda_env nir-coloring; then
+    conda env create --file "$ROOT_DIR/environment.yml";
+    conda develop -n nir-coloring nir-coloring
   fi;
 
-  if ! find_in_conda_env $CYCLE_GAN_ENV_PREFIX; then
-    XDG_CACHE_HOME=/tmp/.cache/ conda env create --prefix $CYCLE_GAN_ENV_PREFIX --file "$ROOT_DIR/cycle-gan/environment.yml";
+  if ! find_in_conda_env cycleGAN; then
+    conda env create --file "$ROOT_DIR/cycle-gan/environment.yml";
   fi;
 }
 

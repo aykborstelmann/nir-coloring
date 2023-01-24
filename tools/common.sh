@@ -8,10 +8,6 @@ fi
 CYCLE_GAN_DIR=$ROOT_DIR/cycle-gan
 REMOTE_REPO_PATH="dev/nir-coloring"
 
-NIR_COLORING_ENV_PREFIX=/tmp/nir-coloring
-CYCLE_GAN_ENV_PREFIX=/tmp/cycle-gan
-
-
 SESSION_TYPE=local
 if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
   SESSION_TYPE=remote/ssh

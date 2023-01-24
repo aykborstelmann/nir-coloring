@@ -11,4 +11,4 @@ if [ ! $NETWORK_NAME ]; then
   exit
 fi;
 
-conda run --no-capture-output --live-stream -p "$CYCLE_GAN_ENV_PREFIX" --cwd $CYCLE_GAN_DIR python train.py --dataroot ./datasets/caltech --name $NETWORK_NAME --model cycle_gan $CONSTANT_NETWORK_ARGUMENTS >> $NETWORK_NAME.out 2>&1 &
+conda run --no-capture-output --live-stream -n cycleGAN --cwd $CYCLE_GAN_DIR python train.py --dataroot ./datasets/caltech --name $NETWORK_NAME --model cycle_gan $CONSTANT_NETWORK_ARGUMENTS >> $NETWORK_NAME.out 2>&1 &
