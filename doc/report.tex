@@ -1,0 +1,101 @@
+\documentclass[a4paper,11pt, DIV=12]{scrartcl}
+\usepackage[utf8x]{inputenc}
+
+\usepackage{graphics} % for pdf, bitmapped graphics files
+\usepackage{epsfig} % for postscript graphics files
+\usepackage{amsmath} % nicer formulas
+\usepackage{amssymb}  % some additional symbols.
+\usepackage{amsfonts}
+\usepackage{booktabs} % nicer tabular
+\usepackage{subfigure} % subfigures in figures.
+\usepackage{biblatex}
+
+\allowdisplaybreaks
+\addbibresource{sources.bib}
+
+\title{Examination of Unpaired Translation Methods for Near-Infrared Image Colorization}
+\author{Ayk Borstelmann\footnote{student id number: 3441004, address: Koenigswinterer Str. 204, 53227 Bonn}}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+\subsection{Related Work}
+
+\section{Dataset}
+While examining both proposed methods for their suitability for near-infrared colorization multiple datasets 
+and two data sources were used \textit{Caltech Camera Traps} and \textit{Snapshot Serengeti} due to advantages 
+and disadvantages of those. 
+
+\subsection{Caltech Camera Traps}
+\textit{Caltech Camera Traps} (CCT) is a dataset consisting of $243.100$ images from $140$ camera locations 
+in the southwestern united states with $21$ animal label categories \cite{caltech}. 
+In particular, it also contains near-infrared images mostly at night and regular RGB images in the daytime. 
+Approximately $70 \%$ of the overall image set is labeled as empty. 
+Annotations are provided in the \textit{COCO Camera Traps} format describing meta information via JSON \cite{caltech}
+This allows an automatic parsing of the available images as well as efficient access to information about 
+the images which comes in useful when creating sub-datasets for training networks.
+Unfortunately, the COCO format does not provide information on whether the image is an RGB- or a NIR image. 
+
+\subsection{Snapshot Serengeti}
+In contrast to the CCT dataset, \textit{Snapshot Serengeti} is a much larger dataset and comes from the Snapshot Serengeti National Park in Tanzania.
+It consists of $7.1$ million images through seven seasons of the Snapshot Serengeti Project \cite{serengeti}. 
+There are $61$ labeled species where as approximately $76\%$ of the images are labeled as empty. 
+Similar to the CCT dataset, Snapshot Serengeti contains near-infrared images as well as RGB images and 
+is annotated in the COCO Camera Traps format \cite{serengeti} and therefore is an easy addition to the CCT dataset.
+In contrast to the CCT dataset, it contains also many RGB images from nighttime using incandescent lightning which 
+proves handy for the training of NIR to RGB translation. 
+
+\subsection{Subset Generation}
+Since both datasets (CCT and Snapshot Serengeti) are substantially larger than processable for training, 
+choosing a subset of those images is essential. The requirements for this subset strongly influence the performance 
+of the models.
+
+1. For both suggested models the input dataset needs to be divided into input- and output-domain, NIR and RGB.
+2. To gain model performance in the main objective, which is colorizing NIR images of animals, 
+   choosing only images that contain animals is important.
+3. Training with a variety of image locations proves to decrease the overfitting for the translation
+   and therefore a uniform distribution of the available locations should be approximated.
+4. Since most NIR images are taken at night the network should not be influenced to solve the more difficult 
+   task of translating images from NIR night to RGB day. This can be archived by only allowing night images for both 
+   domains.
+
+The 2., 3. and 4. requirements are all archivable by using the provided information from the COCO format and therefore 
+are already defined before downloading a single image. 
+While only choosing images with animals is done by a simple filter on the dataset before sampling the approximately uniform distribution 
+of locations can be archived using a weighted sampling where the weight is the inverse of the location occurrences.
+The COCO format also documents the time of recording. This can be used to only sample images from the night. 
+Using the timezones and the geolocations where the datasets were recorded, individual time frames for each day of the year can serve as filters for night images.
+
+Since the COCO format does not provide information about which item is a NIR- and which item is an RGB image \cite{caltech}, that information is not obtainable before downloading.
+Because both datasets provide their NIR images with \textit{colored} logos, they are stored in an RGB image where the actual image section has equal values over all three channels.
+Therefore a simple solution is the download the images and compare the three channels in a cropped version of the image. 
+
+This whole process can be automated in the form of a mix between a rejection- and an importance sampler. It samples from the filtered dataset with weights by location, downloads the image and 
+rejects a sample if the wanted size of NIR- or RGB images is already reached. 
+Finally, the produced subset can be stored in a compact format to archive reproducibility across systems.
+
+\section{Proposed Methods}
+
+\subsection{CycleGAN}
+\subsection{Contrastive Unpaired Translation (CUT)}
+
+\section{Evaluation}
+\subsection{Quantitative Evaluation Metrics}
+\subsection{Qualitative Evaluation Methods}
+\subsection{Dataset Evaluation}
+\subsection{Suiability of CUT}
+
+\section{Discussion}
+\subsection{Comparison CUT vs CycleGAN}
+
+\section{Conclusion}
+\section{Future Work}
+\section{Appendix}
+
+\printbibliography
+
+\end{document}
+
