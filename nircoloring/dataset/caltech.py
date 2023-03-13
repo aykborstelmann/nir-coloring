@@ -37,7 +37,7 @@ CALTECH_EXCLUDE_CATEGORIES = {30, 33, 97}
 SERENGETI_EXCLUDE_CATEGORIES = {0, 1}
 
 DATASET_SIZE = 5000
-PARALLEL_DOWNLOAD_COUNT = 30
+PARALLEL_DOWNLOAD_COUNT = 100
 IMAGE_DOWNLOAD_SIZE = 1024
 TRAIN_DATASET_PROPORTION = 0.8
 
@@ -84,11 +84,12 @@ def make_crop_and_scale_function(crop_box, resize_dimensions=(IMAGE_DOWNLOAD_SIZ
 
 async def save_image(img: Image.Image, filepath):
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    with io.BytesIO() as buffer:
-        save_image_to_buffer(buffer, img)
+    bytes_io = io.BytesIO()
 
-        async with aiofiles.open(filepath, "wb") as outfile:
-            await outfile.write(buffer.getbuffer())
+    save_image_to_buffer(bytes_io, img)
+
+    async with aiofiles.open(filepath, "wb") as outfile:
+        await outfile.write(bytes_io.getbuffer())
 
 
 def save_image_to_buffer(buffer, img):
@@ -117,12 +118,12 @@ async def fetch_file_from_blob(filename, target_file, url_template, sema=None,
             downloader: StorageStreamDownloader = await client.download_blob()
             content = await downloader.readall()
 
-        with io.BytesIO(content) as buffer, Image.open(buffer) as image:
-            image = remove_header_and_footer(image)
-            if callable(in_place_transformation):
-                image = in_place_transformation(image)
+            with io.BytesIO(content) as buffer, Image.open(buffer) as image:
+                image = remove_header_and_footer(image)
+                if callable(in_place_transformation):
+                    image = in_place_transformation(image)
 
-        await save_image(image, target_file)
+                await save_image(image, target_file)
 
 
 def is_corrupted(target_file):
@@ -718,7 +719,7 @@ if __name__ == '__main__':
                                                                             serengeti_downloader,
                                                                             serengeti_nir_incandescent_split_dataset_generator)
 
-    #nir_dataset_downloader.download_dataset()
-    #gray_dataset_downloader.download_dataset()
+    # nir_dataset_downloader.download_dataset()
+    # gray_dataset_downloader.download_dataset()
     # serengeti_nir_incandescent_dataset_downloader.download_dataset()
     serengeti_nir_incandescent_split_dataset_downloader.download_dataset()
