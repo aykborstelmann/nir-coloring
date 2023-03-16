@@ -16,6 +16,9 @@
 
 \newcommand{\x}{\boldsymbol{x}}
 \newcommand{\y}{\boldsymbol{y}}
+\newcommand{\vp}{\boldsymbol{v}^+}
+\newcommand{\vm}{\boldsymbol{v}^-}
+\newcommand{\ve}{\boldsymbol{v}}
 
 \title{Examination of Unpaired Translation Methods for Near-Infrared Image Colorization}
 \author{Ayk Borstelmann\footnote{student id number: 3441004, address: Koenigswinterer Str. 204, 53227 Bonn}}
@@ -223,6 +226,48 @@ Additionally, U-Net generators also need less computational time compared to Res
 
 
 \subsection{Contrastive Unpaired Translation (CUT)}
+CycleGAN solves the content preservation using a cycle consistency loss which requires duplication of the architecture 
+of the GAN to have an inverse and also assumes a bijection between the $\mathcal{X}$ and $\mathcal{Y}$ \cite{cyclegan_orig}.
+The network is forced to learn a revertable translation and therefore some freedom for realistic appearance may be lost. 
+CUT on the other hand doesn't require the learned function $G$ to be invertible. 
+It encourages content preservation by requiring a patch from the output image, e.g. a wildebeest's leg to be most likely to also come from that patch 
+of the input image and not from somewhere else in the image, e.g. the trees in the background. \cite{cut} This is called patchwise contrastive learning. 
+
+\subsubsection*{NCE Loss} % what does NCE stand for ? 
+First given a patch of the output image referenced as "query", we want to maximize the probability that the corresponding 
+patch from the input image, referenced as "positive", would be associated with the query over other input patches referenced
+as "negatives". 
+The query, the positive and the $N$ negatives are represented by $K$-dimensional vectors, $\ve \in \mathbb{R}^K$, $\vp \in \mathbb{R}^K$ 
+and $\vm_n \in \mathbb{R}^K$ as the $n$-th negative and $\ve_n^- \in \mathbb{R}^{N \times K}$. 
+Then we can define a cross-entropy loss $l(\ve, \vp, \vm)$ for $\vp$ being associated over $\vm_n$ (\autoref{eqn:patch_loss}).
+Note Park \textit{et. al.} added a scaling of $\tau = 0.007$ and normalized the vectors into a unit sphere \cite{cut}.
+
+\begin{equation}
+   \label{eqn:patch_loss}
+   \begin{aligned}
+      l(\ve, \vp, \vm) = - \log \left[ \frac{\exp(\ve \cdot \vp / \tau)}{\exp(\ve \cdot \vp / \tau) + \sum_{i=1}^N\exp(\ve \cdot \ve_n^- / \tau)}\right]
+   \end{aligned}
+\end{equation}
+
+To obtain those patch representations as $K$-dimensional vectors Park \textit{et. al.} proposed to use the already existing 
+generator function $G$. $G$ is an encoder-decoder network, therefor $G(\x) = G_{dec}(G_{enc}(\x))$, where $G_{enc}$ denotes the encoder \cite{cut}. 
+Each layer of the encoder network represents multiple patches of the input images. To map this layer to condensed feature vectors, 
+a small Multi-Layer-Perception $H_l$ with 2 layers is used, where $H_l$ maps the $l$-th layer of the encoder network to features 
+$\boldsymbol{z}_l \in \mathbb{R}^{S_l \times C_l}$, therefore $\boldsymbol{z}_l = H_l(G_{enc}^l(\x))$.
+$S_l$ is the number of spatial locations and $C_l$ is the size of each feature vector. 
+For each layer of interest $l \in \{1, \dots, L\}$ the spatial location $s \in \{1, \dots S_l\}$ inside the layer represents a patch of the input image.
+We denote $\boldsymbol{z}_l^s \in \mathbb{R}^{C_l}$ as the feature corresponding to the spatial location which therefore is a vector representation of a patch 
+in the input image. All other features of patches in the images are referred to as $\boldsymbol{z}_l^{S \setminus s} \in \mathbb{R}^{(S_l - 1) \times C_l}$  
+As we now have input image patches we additionally need output query patches as features. Using the same mechanism on the output image we can obtain 
+$\boldsymbol{\hat{z}}_l = H_l(G_{enc}^l(G(\x)))$. Using the loss defined in \autoref{eqn:patch_loss}, we can obtain a loss for the content preservation of the
+GAN $\mathcal{L}_{PatchNCE}(G,H,X)$ \autoref{eqn:patchnce_loss} \cite{cut}.
+
+\begin{equation}
+   \label{eqn:patchnce_loss}
+   \begin{aligned}
+      \mathcal{L}_{PatchNCE}(G,H,X) = \mathbb{E}_{\x \sim X} \sum_{l = 1}^L \sum_{s=1}^{S_l} l(\boldsymbol{\hat{z}}_l^s, \boldsymbol{z}_l^s, \boldsymbol{z}_l^{S \setminus s})
+   \end{aligned}
+\end{equation}
 
 
 \section{Evaluation}
