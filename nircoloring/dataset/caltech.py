@@ -14,6 +14,7 @@ import os
 import pandas as pd
 import random
 import tqdm.asyncio
+import cv2
 from PIL import Image, ImageChops
 from aiohttp import ServerTimeoutError
 from azure.core.exceptions import ResourceNotFoundError, ServiceRequestError
@@ -129,6 +130,7 @@ async def fetch_file_from_blob(filename, target_file, url_template, sema=None,
 def is_corrupted(target_file):
     try:
         Image.open(target_file).verify()
+        cv2.imread(target_file).shape
         return False
     except:
         return True
@@ -620,8 +622,11 @@ class DatasetDownloader:
         in_place_transformation = self.create_transformation_function(subdirectory, dataset_entry)
 
         filepath = join(self.target_directory, subdirectory, os.path.basename(filename_with_lowercase_ext))
+        
         if os.path.exists(filepath):
-            return
+            if not is_corrupted(filepath):
+                return
+            print(f"Image {filepath} is corrupt")
 
         tmp_filepath = join(self.temp_directory, filename_with_lowercase_ext)
 
@@ -720,6 +725,6 @@ if __name__ == '__main__':
                                                                             serengeti_nir_incandescent_split_dataset_generator)
 
     # nir_dataset_downloader.download_dataset()
-    # gray_dataset_downloader.download_dataset()
+    gray_dataset_downloader.download_dataset()
     # serengeti_nir_incandescent_dataset_downloader.download_dataset()
-    serengeti_nir_incandescent_split_dataset_downloader.download_dataset()
+    # serengeti_nir_incandescent_split_dataset_downloader.download_dataset()
