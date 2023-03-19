@@ -6,6 +6,7 @@ then
 fi
 
 CYCLE_GAN_DIR=$ROOT_DIR/cycle-gan
+CUT_DIR=$ROOT_DIR/../contrastive-unpaired-translation
 REMOTE_REPO_PATH="dev/nir-coloring"
 
 SESSION_TYPE=local
