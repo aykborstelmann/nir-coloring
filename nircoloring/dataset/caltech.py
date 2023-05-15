@@ -192,6 +192,15 @@ class SerengetiMetaDataSource(AbstractMetaDataSource):
 
         return df
 
+    def load_categories(self) -> pd.DataFrame:
+        df = pd.DataFrame()
+        for meta_data_file in SNAPSHOT_SERENGETI_DATASET_METADATA_FILES:
+            with open(meta_data_file, "r") as file:
+                metadata = json.load(file)
+                metadata = pd.DataFrame(data=metadata["categories"])
+                df = pd.concat([df, metadata])
+        return df.drop_duplicates()
+
     def filter_not_animal_categories(self, df: pd.DataFrame) -> pd.DataFrame:
         annotations = self.load_annotations()
         annotations["has_animal"] = ~annotations["category_id"].isin(SERENGETI_EXCLUDE_CATEGORIES)
