@@ -1,0 +1,162 @@
+\chapter{Feature Reel} 
+
+\section{Maths}
+
+\LaTeX{} shines when it comes to typesetting maths. This should work as expected when using this template, see \Cref{eq:gauss-integral}. 
+\begin{equation}\label{eq:gauss-integral}
+	\int_{-\infty}^{\infty} \mathrm{e}^{-x^2} \enspace \mathrm{d}x = \sqrt{\pi} 
+\end{equation}
+
+\section{Floating-Environments} 
+% Figures, Tables, TikZ 
+
+Figures and tables should be put in floating environments.
+\Cref{fig:example-fig} shows an example of a floating figure.
+\Cref{tab:example-table} shows an example of a floating table.
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{ccc}
+		\toprule
+		a & b & c \\
+		\midrule
+		a & b & c \\
+		d & e & f \\
+		g & h & i \\
+		\bottomrule
+	\end{tabular}
+	\caption{This is an example of a table with an extraordinarily long caption that requires multiple lines to demonstrate that this is, in principle, possible and still appealing.}
+	\label{tab:example-table} 
+\end{table}
+
+\begin{figure}[ht]
+	\centering 
+	\includegraphics{example-image-a}
+	\caption{This is an example figure} 
+	\label{fig:example-fig} 
+\end{figure}
+
+\section{Algorithms} 
+% 
+Algorithms should be in floating environments. 
+\Cref{alg:swap} shows a levelwise graph mining algorithm taken from \cite{theoremofbenda}.
+You can reference individual lines in the algorithm, for example \Cref{algline:swap:return}.
+
+\begin{algorithm} 
+\begin{tabbing}
+output \= : \= \kill
+input \> : \> A set of people $P$ who have been mindswapped, plus two helpers $a,b$ \\
+\>\>who have never been mindswapped \\
+output \> : \> $P \cup \{a,b\}$ with the right minds in the right bodies \\
+\end{tabbing}
+
+\begin{algorithmic}[1]
+
+\State Have everybody who's messed up arrange themselves in circles of "conga lines", i.e. everyone's front facing someone's back, each facing the body their mind should land in (e.g., if Fry's mind is in Zoidberg's body, then Zoidberg's body should face the back of Fry's body).
+
+\ForAll{Circle}
+
+	\State Start each time with Helper $a$ and Helper $b$'s minds in either their own or each other's bodies
+
+	\State Pick any circle of messed-up people you like and unwrap it into a line with whoever you like at the front
+
+	\State Swap the mind at the front of the line into Helper $a$'s body
+
+	\State From back to front, have everybody in the line swap minds with Helper $b$'s body in turn. (This moves each mind in the line, apart from the front one, forward into the right body. The last switch puts Helper $a$'s mind into Helper $b$'s body.)
+
+	\State Swap the mind in Helper $a$'s body back where it belongs, into the body at the back of the line. This puts Helper $b$'s mind in Helper $a$'s body. Now the circle/line has been completely fixed. The one side effect is that for each time a circle is fixed, the Helpers' minds will switch places, but that's OK, see below\label{algline:swap:return}
+\EndFor
+
+\State At the very end, after all the circles have been fixed, mind-swap the two Helpers if necessary (i.e., in case there was originally an odd number of messed-up circles) 
+
+\end{algorithmic}
+\vspace{1em}
+\caption{Mind Swapping Algorithm \cite{theoremofbenda}}
+\label{alg:swap}
+\end{algorithm}
+
+\section{Theorem-like Environments} \label{sec:theorem-like-environments} 
+% list the predefined environments
+
+The \texttt{ivs-thesis} class provides the following set of theorem-like environments with an appropriate numbering scheme using the \texttt{ntheorem} package: 
+\begin{description}[font=\normalfont\ttfamily]
+	\item[defn] Technical notions, such as abstract structures, complexity measures, data structures, etc., that are central for your thesis should be emphasized by properly \emph{defining} them in a \emph{definition} environment. 
+	\item[thm] A \emph{theorem} is an important and central theoretical result of your thesis and should be presented as such. 
+	\item[proof] \emph{Proofs} are necessary for every of your own theoretical results and most of the time come directly after a theorem, lemma, or proposition. Note that you can usually cite theorems by other authors without proof. When in doubt consult your supervisor. 
+	\item[prop] A \emph{proposition} is a self-contained mathematical result. Usually, a theoretical result that is interesting but not central for the research problem of your thesis can be presented as a proposition. 
+	\item[lem] A \emph{lemma} is a minor statement or an auxiliary statement that is used in the proof of another proposition or theorem. It is sensible to structure complicated proofs into logical units to improve the 
+	\item[cor] A \emph{corollary} is an immediate and obvious consequence of a theorem or proposition and as such does not require a comprehensive proof. 
+	\item[rmk] Observations, ideas, motivations that you want to emphasize as such but are not really mathematical statements can be set as a \emph{remark}. 
+	\item[rmks] Used for multiple \emph{remarks}. 
+	\item[exa] It is always a good idea to provide an \emph{example} that illustrates a notion, idea, or a result in an easy-to-understand way. 
+	\item[exas] Used for multiple \emph{examples}. 
+	\item[prblm] A (research) \emph{problem} you want to study or present and that is relevant for your thesis
+	\item[prblms] Used for multiple \emph{problems}. 
+	\item[quest] If you study a certain \emph{question} and want to refer to it at other points in the thesis, it might be worth it to typeset it in a theorem-like environment. 
+	\item[quests] Used for multiple \emph{questions}. 
+\end{description}
+
+The advantage of using theorem-like environments is not only that they are more prominent in the text emphasizing central notions and results but also that they can be labeled and referenced. The usage of theorem-like environments and how to reference them is demonstrated below. For instance,~\Cref{prblm:mind-switching-problem} was produced by the following \LaTeX{} code: 
+\begin{Verbatim}
+\begin{prblm}[Mind-Switching Problem] 
+	\label{prblm:mind-switching-problem}
+	...
+\end{prblm} 
+\end{Verbatim}
+
+\begin{prblm}[Mind-Switching Problem] 
+    \label{prblm:mind-switching-problem}
+    \textcolor{red}{todo} %TODO: 
+\end{prblm} 
+
+\begin{defn}
+	\textcolor{red}{todo} %TODO: 
+\end{defn}
+
+\begin{thm}[Keeler's Theorem]
+	\textcolor{red}{todo} %TODO: 
+\end{thm}
+
+For more information on the \texttt{ntheorem} package, refer to its documentation. %TODO: cite the documentation
+
+\section{List Environments} 
+% itemize, enumerate, description
+
+You can use the following nestable list environments 
+\begin{description}[font=\normalfont\ttfamily]
+	\item[itemize] used for bullet lists without numbering
+	\item[enumerate] used for numbered lists 
+	\item[description] used for item description lists (such as this one)
+\end{description}
+
+This is an example for nested bullet lists: 
+\begin{enumerate} 
+	\item Philip J. Fry 
+	\begin{itemize} 
+		\item was cryogenically frozen 
+		\item delivery boy at Planet Express
+		\item former pizza delivery boy
+	\end{itemize}
+	\item Turanga Leela 
+	\begin{itemize}
+		\item one-eyed mutant
+		\item purple hair 
+		\item spaceship captain of \enquote{Old Bessie} 
+	\end{itemize}
+	\item Bender Bending Rodr\'{i}guez
+	\begin{itemize}
+		\item Bending Unit 22
+		\item Unit no. 1729
+		\item Serial no. 2716057
+	\end{itemize}
+\end{enumerate}
+
+\section{Citations}
+ 
+You can use the bibliography package of your liking. If you choose to stick with the default, i.e., \texttt{biblatex} with \texttt{biber} as a backend, you can cite sources by using the following commands: 
+\begin{description}[font=\normalfont\ttfamily]
+	\item[\textbackslash{}cite] a bare citation without parentheses; example: \cite{adams1979} 
+	\item[\textbackslash{}parencite] a citation enclosed in parentheses; example: \parencite{adams1979} 
+	\item[\textbackslash{}textcite] a citation that is part of the text; example: \textcite{adams1979} 
+\end{description}
+The \texttt{biblatex} package provides a rich tool set for citations and the bibliography. For further information, refer to the \texttt{biblatex} documentation. %TODO: cite the biblatex documentation

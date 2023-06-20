@@ -1,0 +1,93 @@
+% !TeX -lualatex 
+\documentclass[ma,logo]{ivs-thesis} 
+
+\input{preamble} 
+
+\title{Unpaired Image Translation for Near-Infrared Image Colorization} 
+\author{Ayk Borstelmann\\\birthinfo{March 28, 2002 in Aschaffenburg}\\\matricnumber{3441004}}
+
+\examiner{%
+	PD Dr. Volker Steinhage\\University of Bonn \and 
+	Prof. Dr. Matthias B. Hullin\\University of Bonn
+}
+\supervisor{Timm Haucke\\ University of Bonn}
+
+\date{September 18, 2023}
+
+\addbibresource{references.bib} 
+\usepackage{blindtext}
+
+
+\begin{document}	
+	\frontmatter 
+	
+	\maketitle 
+	
+	\cleardoublepage
+	\begin{abstract}
+		\blindtext[3]
+	\end{abstract}
+
+	\chapter*{Acknowledgements}  
+	
+	\cleardoublepage
+	\chapter*{Statement of Authorship} 
+	\input{authorship-en.tex} 
+	%\chapter*{Eigenst\"{a}ndigkeitserkl\"{a}rung}
+	%\input{authorship-de.tex} 
+	
+	\cleardoublepage
+	\tableofcontents
+	
+	
+	\mainmatter
+	
+	\include{introduction} 
+	
+	%\include{related-work} 
+	
+	%\include{preliminaries}
+	
+	\include{setup} 
+	
+	\include{feature-reel}
+
+	\subsection{Colors}
+	The colors of the University of Bonn corporate design are available in this template and can be used as regular \LaTeX{} colors. E.g.
+	\begin{itemize}
+	\item \verb+\textcolor{ub-blue}{}+ \textcolor{ub-blue}{makes the text blue}
+	\item \verb+\textcolor{ub-yellow}{}+ \textcolor{ub-yellow}{makes the text yellow}
+	\item \verb+\textcolor{ub-gray}{}+ \textcolor{ub-gray}{makes the text gray}
+	\end{itemize}
+	
+	\include{useful-additions} 
+	
+	\include{conclusions} 
+	
+	% Workaround: 
+	% The backmatter deactivates chapter numbering for the appendices which are 
+	% supposed to appear in the backmatter _after_ the bibliography. This makes 
+	% referencing the appendices a hassle. A workaround is to put the
+	% backmatter, bibilography, and lists-of in a LaTeX group using \begingroup 
+	\begingroup 
+	
+	\backmatter
+		
+	\printbibliography[heading=bibintoc]
+	
+	\listoffigures
+	
+	\listoftables
+	
+	\endgroup 
+	% End of Workaround 
+	
+	\appendix
+	
+	\chapter{Known Issues}  
+	\begin{itemize}
+	\item There might be problems compiling this latex document in Windows because of the missing font package TeX Gyre Pagella. In that case please install the font package manually.
+	\end{itemize}
+	
+	
+\end{document}

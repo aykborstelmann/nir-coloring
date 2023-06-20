@@ -1,0 +1,109 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Language Settings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% To specify the language of your thesis, uncomment the appropriate setting
+% which depends on your LaTeX compiler. If you use a modern compiler such as
+% LuaLaTeX or XeLaTeX, it is recommended to use the 'polyglossia' package to
+% specify the language. If you use LaTeX or PDFLaTeX, 'babel' is recommended. 
+
+% English
+
+% LuaLaTeX or XeLaTeX 
+\usepackage{polyglossia}
+\setmainlanguage{english} 
+
+% PDFLaTeX 
+%\usepackage[english]{babel}
+
+% German 
+
+% LuaLaTeX or XeLaTeX 
+%\usepackage{polyglossia}
+%\setmainlanguage{german} 
+
+% PDFLaTeX 
+%\usepackage[ngerman]{babel}
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Settings for list environments 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{enumitem}
+
+\setlist{nosep,topsep=1ex,labelindent=\parindent,listparindent=\parindent}
+
+\setlist[description]{leftmargin=2cm,style=nextline}
+
+\setlist[enumerate,1]{label=(\roman*)}
+\setlist[enumerate,2]{label=(\alph*)}
+\setlist[enumerate,3]{label=(\arabic*)} 
+
+\setlist[itemize,1]{label=\textbullet}
+\setlist[itemize,2]{label=\rule[.2ex]{0.8ex}{0.8ex}}
+\setlist[itemize,3]{label=-}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Useful Packages and Settings 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{csquotes} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Demo Packages
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% The packages included and settings set here are solely for the demo document
+% and can be removed in your thesis 
+
+\usepackage{metalogo} 
+\usepackage{fancyvrb}
+
+\RecustomVerbatimEnvironment{Verbatim}{Verbatim}{xleftmargin=\parindent,numbers=left,firstnumber=last,tabsize=4} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Citation Package
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{varioref}
+\usepackage{cleveref}
+\usepackage[backend=biber,style=authoryear]{biblatex}
+\renewcommand*{\nameyeardelim}{\addcomma\space} 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Theoremstyles
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{break}
+\theorembodyfont{\normalfont}
+\theoremseparator{.}
+\theorempreskip{1em}
+\theorempostskip{1em}
+\theoremsymbol{\ensuremath{\diamond}}
+
+\newtheorem{thm}{Theorem}[chapter]
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{cor}[thm]{Corollary}
+
+\newtheorem{exa}[thm]{Example}
+\newtheorem{exas}[thm]{Examples}
+
+\newtheorem{prblm}[thm]{Problem}
+\newtheorem{prblms}[thm]{Problems}
+
+\newtheorem{quest}{Question}
+\newtheorem{quests}{Questions}
+
+\newtheorem{rmk}[thm]{Remark}
+\newtheorem{rmks}[thm]{Remarks}
+
+\newtheorem{defn}[thm]{Definition}
+
+\theoremstyle{nonumberplain}
+\theoremheaderfont{\itshape}
+\theoremsymbol{\rule{1ex}{1ex}}
+
+\newtheorem{proof}{Proof}
