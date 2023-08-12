@@ -1,16 +1,4 @@
-*.aux
-*.bbl
-*.bcf
-*.blg
-*.fdb_latexmk
-*.fls
-*.out
-*.pdf
-*.run.xml
-*.synctex.gz
-*.log
-.vscode/
-tmp/dataset
+mp/dataset
 .idea/
 data/dataset/caltech_images.json
 data/dataset/SnapshotSerengetiS*.json
