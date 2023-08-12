@@ -3,26 +3,21 @@
 scale 1920 width
 
 printscale weekly
-[Datensatz] lasts 2 weeks
-[CycleGAN Implementierung] as [CycleGANImpl] lasts 3 weeks
-[CycleGAN Test & Optimierung] as [CycleGANOpt] lasts 1 week
-[CUT Implementierung & Tests] as [CUT] lasts 2 week
-[CUT Methodik Untersuchen] as [CUTMet] lasts 1 week
-[Minimierung von Erfindungen] as [MinErf] lasts 4 week
-[Klassifikation] as [Klass] lasts 4 week
-[Endevaluation] as [End] lasts 6 week
+[DDIB Test] as [DDIB] lasts 2 weeks
+[Improve DDIB] as [DDIB-I] lasts 1 weeks
+[DDIB & Simple Diffusion Colorization] as [DDIB-CM] lasts 2 weeks
+[Simple Diffusion Colorization] as [GCD] lasts 3 weeks
+[Paired Dataset] as [PDS] lasts 3 weeks
+[Writing] lasts 6 weeks and ends at 2023-09-18
 
-2022-12-24 to 2022-12-30 is closed
+2023-07-27 to 2023-08-07 is closed
 
-Project starts 2022-10-04
-[Datensatz] starts 2022-10-04
-[CycleGANImpl] starts at [Datensatz]'s end
-[CycleGANOpt] starts at [CycleGANImpl]'s end
-[CUT] starts at [CycleGANOpt]'s end
-[CUTMet] starts at [CUT]'s end
-[MinErf] starts at [CUTMet]'s end
-[Klass] starts at [MinErf]'s end
-[End] starts at [Klass]'s end
+Project starts 2023-06-12
+[DDIB Test] starts 2023-06-20 and ends 2023-06-26
+[DDIB-I] starts at [DDIB Test]'s end
+[DDIB-CM] starts at [DDIB-I]'s end
+[GCD] starts at [DDIB Test]'s end
+[PDS] starts at [DDIB Test]'s end
 
 @endgantt
 ```
