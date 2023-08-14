@@ -18,56 +18,66 @@
 \usepackage{blindtext}
 
 
-\begin{document}	
-	\frontmatter 
-	
-	\maketitle 
-	
-	\cleardoublepage
-	\begin{abstract}
-		\blindtext[3]
-	\end{abstract}
+\begin{document}
+\frontmatter
 
-	\chapter*{Acknowledgements}  
-	
-	\cleardoublepage
-	\chapter*{Statement of Authorship} 
-	\input{authorship-en.tex} 
-	%\chapter*{Eigenst\"{a}ndigkeitserkl\"{a}rung}
-	%\input{authorship-de.tex} 
-	
-	\cleardoublepage
-	\tableofcontents
-	
-	
-	\mainmatter
-	
-	\include{introduction} 
-	
-	\include{methods}
-		
-	\include{evaluations} 
-	
-	\include{conclusions}
+\maketitle
 
-	% Workaround: 
-	% The backmatter deactivates chapter numbering for the appendices which are 
-	% supposed to appear in the backmatter _after_ the bibliography. This makes 
-	% referencing the appendices a hassle. A workaround is to put the
-	% backmatter, bibilography, and lists-of in a LaTeX group using \begingroup 
-	\begingroup 
-	
-	\backmatter
-		
-	\printbibliography[heading=bibintoc]
-	
-	\listoffigures
-	
-	\listoftables
-	
-	\endgroup 
-	% End of Workaround 
-	
-	\appendix
-	
+\cleardoublepage
+\begin{abstract}
+	Unpaired image translation problems belong to the broader category of image-to-image translation, 
+	wherein the goal is to learn a translation without any available image pairs. 
+	On instance of this problem is Near-Infrared colorization, which aims to convert NIR images to colored RGB images,
+	thereby benefiting from both formats:
+	While NIR images are suitable for capturing images in low-light conditions without visible flash, 
+	RGB images facilitate human comprehension due to their ability to discriminate colors. 
+	Current methods for this problem involve Generative Adversial Networks (GANs), 
+	which may suffer from mode collapse and unrealistic images outcomes. 
+	Diffusion models are known for their extremely realistic image synthesis. 
+	We study unpaired image translation on such models. 
+	This tooling can benefit researchers working with camera traps using NIR images as well as object detection systems.
+\end{abstract}
+
+\chapter*{Acknowledgements}
+
+\cleardoublepage
+\chapter*{Statement of Authorship}
+\input{authorship-en.tex}
+%\chapter*{Eigenst\"{a}ndigkeitserkl\"{a}rung}
+%\input{authorship-de.tex} 
+
+\cleardoublepage
+\tableofcontents
+
+
+\mainmatter
+
+\include{introduction}
+
+\include{methods}
+
+\include{evaluations}
+
+\include{conclusions}
+
+% Workaround: 
+% The backmatter deactivates chapter numbering for the appendices which are 
+% supposed to appear in the backmatter _after_ the bibliography. This makes 
+% referencing the appendices a hassle. A workaround is to put the
+% backmatter, bibilography, and lists-of in a LaTeX group using \begingroup 
+\begingroup
+
+\backmatter
+
+\printbibliography[heading=bibintoc]
+
+\listoffigures
+
+\listoftables
+
+\endgroup
+% End of Workaround 
+
+\appendix
+
 \end{document}

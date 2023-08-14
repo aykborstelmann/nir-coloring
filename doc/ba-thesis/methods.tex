@@ -52,9 +52,9 @@ This whole process can be automated in the form of a mix between a rejection- an
 It samples from the filtered data source with weights by location, downloads the image and rejects a sample if the desired amount of NIR- or RGB images is reached.
 Finally, the produced subset can be stored in a compact format to achieve reproducibility across systems and reduce computational time.
 
-\section{CycleGAN}
+\section{Generative Adversarial Networks}
 
-\subsection{Generative Adversarial Networks}
+\subsection{Fundamentals}
 
 For image translation, a mapping function $G: \mathcal{X} \to \mathcal{Y}$ shall be learned.
 In our case, $\mathcal{X}$ is the input domain of the near-infrared images, whereas $\mathcal{Y}$ is the output domain of the colored RGB images.
@@ -80,8 +80,7 @@ In the following, we will concentrate on two options:
 1. Using a \textit{cycle consistency loss} which was introduced by Zhu \textit{et al.} for the network \textit{CycleGAN} \cite{cyclegan_orig}
 and 2. using a \textit{contrastive loss} that Park \textit{et al.} introduced into this environment for the network \textit{CUT} \cite{cut}.
 
-
-\subsection{Cycle-Consistency Loss}
+\subsection{CycleGAN}
 
 CycleGAN is a network architecture presented by Zhu \textit{et al.} and introduces a \textit{cycle consistency loss} for image translations using GANs.
 The idea is that the translation between the two domains should be "cycle consistent", meaning that when translating an image from NIR to RGB and back
