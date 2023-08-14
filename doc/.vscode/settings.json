@@ -1,4 +1,7 @@
 {
     "latex-workshop.latex.outDir": "%DIR%/build",
     "latex-workshop.latex.recipe.default": "latexmk (xelatex)",
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 500,
+    "editor.formatOnSave": false,
 }

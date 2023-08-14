@@ -1,0 +1,61 @@
+\chapter{Methods}
+
+\section{Data}
+While examining both proposed methods for their suitability for near-infrared colorization, multiple datasets
+and two data sources \textit{Caltech Camera Traps} \cite{caltech} and \textit{Snapshot Serengeti} \cite{serengeti} were used.
+
+\subsection{Caltech Camera Traps}
+\textit{Caltech Camera Traps} (CCT) is a dataset consisting of $243.100$ images from $140$ camera locations
+in the southwestern United States with $21$ animal label categories \cite{caltech}.
+In particular, it primarily contains near-infrared images for the night and regular RGB images for images captured during the day.
+Approximately $70 \%$ of the overall image set is labeled empty.
+Annotations are provided in the \textit{COCO Camera Traps} format, describing meta information via JSON \cite{caltech}
+This allows an automatic parsing of the available images as well as efficient access to information about
+the images, which comes in useful when creating sub-datasets for training networks.
+
+\subsection{Snapshot Serengeti}
+In contrast to the CCT dataset, \textit{Snapshot Serengeti} is a much larger dataset and comes from the Snapshot Serengeti National Park in Tanzania.
+It consists of $7.1$ million images through seven seasons of the Snapshot Serengeti Project \cite{serengeti}.
+There are $61$ labeled species, where approximately $76\%$ of the images are labeled empty.
+Similar to the CCT dataset, Snapshot Serengeti contains near-infrared images as well as RGB images and
+is annotated in the COCO Camera Traps format \cite{serengeti}. Therefore, dataset tooling can be used for both datasets.
+Unlike the CCT dataset, Snapshot Serengeti employed multiple cameras for images captured at night.
+Scoutgard's SG565 cameras produce RGB \textbf{night} images using an \textit{incandescent} flash and DLC Covert II cameras use an infrared flash and therefore produce NIR night images \cite{serengeti}.
+
+\subsection{Subset Generation}
+Since both datasets (CCT and Snapshot Serengeti) are substantially larger than processable for training, choosing a subset of these images is essential.
+The requirements for this subset strongly influence the training performance of the translation models.
+
+\begin{enumerate}
+      \item Both network architectures require the dataset to be divided into an input domain (NIR) and an output domain (RGB). \label{item:requirement-split}
+      \item To gain model performance in the main objective, which is to colorize the NIR images of \textit{animals}, it is important to choose only images that contain animals. \label{item:requirement-animal-filter}
+      \item Training with a variety of image locations proves to decrease overfitting for the translation, and therefore a uniform distribution of the available locations should be approximated.
+            Additionally, utilizing a random crop for each image can also help mitigate overfitting, and therefore, it is suggested. \label{item:requirement-weighted-sampling}
+      \item Since most NIR images are taken at night, the network should not be influenced to solve the more difficult
+            task of translating images from NIR night to RGB day. This can be achieved by only allowing night images for both
+            domains. \label{item:requirement-night}
+\end{enumerate}
+
+
+The \ref{item:requirement-animal-filter}., \ref{item:requirement-weighted-sampling}. and \ref{item:requirement-night}. requirements are all achievable by using the information provided in the COCO format, and therefore,
+are already obtainable before downloading a single image.
+Only choosing images with animals (\ref{item:requirement-animal-filter}.) is done by a simple filter on the data source before sampling.
+The approximately uniform distribution of locations (\ref{item:requirement-weighted-sampling}.) can be archived using a weighted sampling with the inverse of location occurrences as weight.
+Filtering for only night images (\ref{item:requirement-night}.) can also be achieved only using metadata:
+The COCO format documents the time of recording. Using time zones and geolocations, individual time frames for each day of the year can serve as filters for night images.
+
+Since the COCO format does not provide information about which item is a NIR- and which item is an RGB image (\ref{item:requirement-split}.) \cite{caltech}, that information is not available before downloading.
+Because both data sources provide their NIR images with \textit{colored} logos, they are stored in an RGB image where the actual image section has equal values over all three channels.
+Therefore, a pragmatic solution is to download the images and compare the three channels in a cropped version of the image (without the logo section).
+
+This whole process can be automated in the form of a mix between a rejection- and an importance sampler:
+It samples from the filtered data source with weights by location, downloads the image and rejects a sample if the desired amount of NIR- or RGB images is reached.
+Finally, the produced subset can be stored in a compact format to achieve reproducibility across systems and reduce computational time.
+
+\section{CycleGAN}
+\subsection{Generative Adversarial Networks}
+\subsection{Cycle-Consistency Loss}
+\section{Diffusion Models}
+\subsection{Prerequisites}
+\subsection{Loss-Based Conditional Sampling}
+\subsection{Strong-Guided Conditional Sampling}

@@ -1,0 +1,33 @@
+\chapter{Evaluations}
+
+\section{Evaluation Metrics}
+
+As NIR colorization has two main application contexts: providing human users more interpretable images and to improve object recognition results by enriching the input with more information.
+To assess the effectiveness of both models, we define qualitative evaluation categories and quantitative evaluation metrics based on their ability to achieve these goals.
+
+\subsection{Quantitative Evaluation Metrics}
+Due to the unpaired setting, in the quantitative evaluation classic solutions, such as the difference between the absolute intensity values or SSIM \cite{ssim}, cannot be applied. Fortunately, methods for comparing the general image similarity of two sets, such as FID \cite{ttur} or
+comparing classification results using an off-the-shelf network, are well known to quantitatively assess the quality of image translation.
+
+\subsubsection*{FID}
+To measure how close the generated images are to the real images concerning human perception, the \textit{Fréchet Inception Distance} (FID) \cite{ttur} is a commonly used metric.
+It empirically estimates how the human eye perceives images for a set of images and computes the distance between two such set representations.
+First, a pre-trained InceptionV3 model evaluates each image of the image set and the activation of the last layer is considered the "human perception approximation".
+Then for all activation vectors of the evaluated images in the images set, a multidimensional Gaussian is fitted over those activation vectors.
+This is done for two image sets, and later the two Gaussians are compared using the Fréchet distance \cite{ttur}.
+Intuitively, if the generated images are realistic, the statistics of features in a classification network should be similar to the real ones.
+
+\subsection{Qualitative Evaluation Methods}
+For qualitative evaluation, we define categories on how we determine the superior generated images. These are again based on the two main application contexts.
+
+The first category describes the \textit{naturality} of an image, where the generated images should resemble how humans perceive the world, without artifacts or periodic patterns that can affect visual perception.
+
+The second category refers to the \textit{content preservation} of the input image. This should help humans as well as object detection systems to find and classify animals accurately.
+
+\textit{Hallucinations}, as artifacts or scene elements that are not in the input image, contradict naturality and content preservation, and therefore are undesirable.
+
+\section{Loss-Guided Diffusion and Strongly Guided-Diffusion}
+\section{Near-Infrared as Grayscale Approximation}
+\section{Diffusion and GAN}
+\subsection{Extended Dataset --- Robustness}
+\subsection{General Comparison}
