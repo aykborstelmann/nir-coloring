@@ -17,6 +17,9 @@ Then for all activation vectors of the evaluated images in the images set, a mul
 This is done for two image sets, and later the two Gaussians are compared using the Fréchet distance \cite{ttur}.
 Intuitively, if the generated images are realistic, the statistics of features in a classification network should be similar to the real ones.
 
+\subsubsection*{Evaluation of the FID}
+\label{cap:evaluate-fid}
+
 \subsection{Qualitative Evaluation Methods}
 For qualitative evaluation, we define categories on how we determine the superior generated images. These are again based on the two main application contexts.
 
@@ -31,3 +34,101 @@ The second category refers to the \textit{content preservation} of the input ima
 \section{Diffusion and GAN}
 \subsection{Extended Dataset --- Robustness}
 \subsection{General Comparison}
+Finally, we study the diffusion models performance in comparison to CycleGAN.
+An unconditional diffusion model for a resolution of $128 \times 128$ was trained on the RGB domain of the same training dataset as CycleGAN.
+
+First we evaluate the unconditional sampling of the diffusion model and therefore validate \cite{dif-beat-gan}'s results for image synthesis in still hold for this dataset:
+
+\begin{table}[htp!]
+    \centering
+    \begin{tabular}{c | c}
+        Model                   & FID  $\downarrow$ \\
+        \hline\hline
+        CycleGAN                & 97.76             \\
+        Unconditional Diffusion & 95.73
+    \end{tabular}
+    \caption{
+        \textbf{Quantitative Evaluation.} CycleGAN and the diffusion model trained on Snapshot Serengeti \cite{serengeti} containing only night NIR and RGB images.
+        Comparing the FID calculated between the test dataset and the generated images.
+    }
+    \label{fig:quantititative-evaluation-unconditional-sampling}
+\end{table}
+
+\begin{figure}[htp!]
+    \centering
+    \setkeys{Gin}{width=1\linewidth}
+    \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
+        RGB                                                                                    & CycleGAN                                                                                         & Diffusion                                                                                    & RGB                                                                                    & CycleGAN                                                                                         & Diffusion                                                                                    \\
+        \includegraphics{gfx/unconditional-diffusion-sampling-qual/rgb_S2_B04_R3_IMAG0432.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/cyclegan_S2_B06_R1_PICT0128_fake.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/diffusion_S2_B06_R1_PICT0128.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/rgb_S2_B04_R3_IMAG0471.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/cyclegan_S2_B06_R1_PICT0279_fake.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/diffusion_S2_B06_R1_PICT0279.png} \\
+        \includegraphics{gfx/unconditional-diffusion-sampling-qual/rgb_S2_B05_R1_IMAG0084.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/cyclegan_S2_B06_R1_PICT0387_fake.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/diffusion_S2_B06_R1_PICT0387.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/rgb_S2_B05_R1_IMAG0132.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/cyclegan_S2_B06_R3_PICT1364_fake.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/diffusion_S2_B06_R3_PICT1364.png} \\
+        \includegraphics{gfx/unconditional-diffusion-sampling-qual/rgb_S2_B05_R2_IMAG0016.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/cyclegan_S2_B06_R3_PICT3848_fake.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/diffusion_S2_B06_R3_PICT3848.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/rgb_S2_B05_R3_IMAG1018.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/cyclegan_S2_B07_R1_PICT3274_fake.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/diffusion_S2_B07_R1_PICT3274.png}
+    \end{tabularx}
+    \caption{
+        \textbf{Qualitative Evaluation.} Left to right: Sample image from the RGB domain of the Serengeti test dataset \cite{serengeti},
+        sample produced by CycleGAN \cite{mehri2019colorizing} and an unconditional sample produced by the diffusion model \cite{dif-beat-gan}.
+    }
+    \label{fig:qualitative-evaluation-unconditional-sampling}
+\end{figure}
+
+Qualitatively we observe in \autoref{fig:qualitative-evaluation-unconditional-sampling} that the diffusion model is capable to create realistic images.
+The model produced many similar images which do not contain animals, which is not unexpectable since such exist in the training dataset as well.
+In cases of animal presence it performances exceptionally well in creating realistic animals with matching lighting.
+Only in few cases where trees are generated, branches are not well distinguishing, this is the only flaw which can be observed.
+
+Quantitatively in \autoref{fig:quantititative-evaluation-unconditional-sampling} we see, the diffusion network only slightly outperforms CycleGAN's performance.
+This may be caused by the usage of a smaller U-Net generator, less training iterations and a smaller dataset compared to \cite{dif-beat-gan} which are all trade-off which
+had to be made due to a lack of ultra-high performant computational resources.
+Nevertheless, it can be argued that this unconditional diffusion model is capable enough to be a basis for a good colorization.
+
+
+\begin{table}[htp!]
+    \centering
+    \begin{tabular}{c | c}
+        Model                 & FID  $\downarrow$ \\
+        \hline\hline
+        CycleGAN              & 97.76             \\
+        Conditional Diffusion & 103.71
+    \end{tabular}
+    \caption{
+        \textbf{Quantitative Evaluation.} CycleGAN and the diffusion model trained on Snapshot Serengeti \cite{serengeti} containing only night NIR and RGB images.
+        Comparing the FID calculated between the test dataset and the generated images.
+    }
+    \label{fig:quantititative-evaluation-conditiona-sampling}
+\end{table}
+
+\begin{figure}
+    \centering
+    \setkeys{Gin}{width=1\linewidth}
+    \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
+        NIR                                                                                  & CycleGAN                                                                                       & Diffusion                                                                                  & NIR                                                                                  & CycleGAN                                                                                       & Diffusion                                                                                  \\
+        \includegraphics{gfx/conditional-diffusion-sampling-qual/nir_S2_B06_R1_PICT0128.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-qual/cyclegan_S2_B06_R1_PICT0128_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/diffusion_S2_B06_R1_PICT0128.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/nir_S2_B06_R1_PICT0279.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-qual/cyclegan_S2_B06_R1_PICT0279_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/diffusion_S2_B06_R1_PICT0279.png} \\
+        \includegraphics{gfx/conditional-diffusion-sampling-qual/nir_S2_B06_R1_PICT0387.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-qual/cyclegan_S2_B06_R1_PICT0387_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/diffusion_S2_B06_R1_PICT0387.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/nir_S2_B06_R3_PICT1364.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-qual/cyclegan_S2_B06_R3_PICT1364_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/diffusion_S2_B06_R3_PICT1364.png} \\
+        \includegraphics{gfx/conditional-diffusion-sampling-qual/nir_S2_B06_R3_PICT3848.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-qual/cyclegan_S2_B06_R3_PICT3848_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/diffusion_S2_B06_R3_PICT3848.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/nir_S2_B07_R1_PICT3274.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-qual/cyclegan_S2_B07_R1_PICT3274_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/diffusion_S2_B07_R1_PICT3274.png}
+    \end{tabularx}
+    \caption{
+        \textbf{Qualitative Evaluation.} Left to right: Image from the NIR domain of the Serengeti test dataset \cite{serengeti},
+        corresponding image generated by CycleGAN \cite{mehri2019colorizing} and corresponding sample generated by our diffusion model approach.
+    }
+    \label{fig:qualitative-evaluation-conditional-sampling}
+\end{figure}
+
+
+We compare performances of our trained CycleGAN with our conditional diffusion network.
+In this case strong guidance with the NIR $\approx$ Intensity approximation is used.
+\autoref{fig:quantititative-evaluation-conditiona-sampling} indicates strong performance of the conditional 
+diffusion network only, $\sim 6$ FID points worse than CycleGAN. 
+Considering the flaws analyzed and observed in \autoref{cap:evaluate-fid} those points are only a small difference.
+Furthermore, qualitatively we can also observe those generated images are faithful to the input image (\autoref{fig:qualitative-evaluation-conditional-sampling}). 
+It is to be mentioned that faithfulness to the input image is not a quality learned by the network, but a design choice of the sampling procedure.
+Additionally, colors estimated by the diffusion model appear reasonable. 
+Weaknesses in the colorization are observable when analyzing the zebra image:  
+While CycleGAN colorizes the main zebra body as black and white, the diffusion network produces an orange-black zebra. 
+This can be traced back to a conceptional weakness. 
+The diffusion network is forced to reuse the intensity of the NIR image. 
+The zebra in the NIR image is gray-black and therefore the network is not capable in generating high intensity pixels. 
+
+
+
+
+We analyze this weakness of the diffusion model even further for this we study the differences of intensities: 
+
