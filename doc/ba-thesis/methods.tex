@@ -2,25 +2,25 @@
 
 \section{Data}
 While examining both proposed methods for their suitability for near-infrared colorization, multiple datasets
-and two data sources \textit{Caltech Camera Traps} \cite{caltech} and \textit{Snapshot Serengeti} \cite{serengeti} were used.
+and two data sources \textit{Caltech Camera Traps} \parencite{caltech} and \textit{Snapshot Serengeti} \parencite{serengeti} were used.
 
 \subsection{Caltech Camera Traps}
 \textit{Caltech Camera Traps} (CCT) is a dataset consisting of $243.100$ images from $140$ camera locations
-in the southwestern United States with $21$ animal label categories \cite{caltech}.
+in the southwestern United States with $21$ animal label categories \parencite{caltech}.
 In particular, it primarily contains near-infrared images for the night and regular RGB images for images captured during the day.
 Approximately $70 \%$ of the overall image set is labeled empty.
-Annotations are provided in the \textit{COCO Camera Traps} format, describing meta information via JSON \cite{caltech}
+Annotations are provided in the \textit{COCO Camera Traps} format, describing meta information via JSON \parencite{caltech}
 This allows an automatic parsing of the available images as well as efficient access to information about
 the images, which comes in useful when creating sub-datasets for training networks.
 
 \subsection{Snapshot Serengeti}
 In contrast to the CCT dataset, \textit{Snapshot Serengeti} is a much larger dataset and comes from the Snapshot Serengeti National Park in Tanzania.
-It consists of $7.1$ million images through seven seasons of the Snapshot Serengeti Project \cite{serengeti}.
+It consists of $7.1$ million images through seven seasons of the Snapshot Serengeti Project \parencite{serengeti}.
 There are $61$ labeled species, where approximately $76\%$ of the images are labeled empty.
 Similar to the CCT dataset, Snapshot Serengeti contains near-infrared images as well as RGB images and
-is annotated in the COCO Camera Traps format \cite{serengeti}. Therefore, dataset tooling can be used for both datasets.
+is annotated in the COCO Camera Traps format \parencite{serengeti}. Therefore, dataset tooling can be used for both datasets.
 Unlike the CCT dataset, Snapshot Serengeti employed multiple cameras for images captured at night.
-Scoutgard's SG565 cameras produce RGB \textbf{night} images using an \textit{incandescent} flash and DLC Covert II cameras use an infrared flash and therefore produce NIR night images \cite{serengeti}.
+Scoutgard's SG565 cameras produce RGB \textbf{night} images using an \textit{incandescent} flash and DLC Covert II cameras use an infrared flash and therefore produce NIR night images \parencite{serengeti}.
 
 \subsection{Subset Generation}
 Since both datasets (CCT and Snapshot Serengeti) are substantially larger than processable for training, choosing a subset of these images is essential.
@@ -44,7 +44,7 @@ The approximately uniform distribution of locations (\ref{item:requirement-weigh
 Filtering for only night images (\ref{item:requirement-night}.) can also be achieved only using metadata:
 The COCO format documents the time of recording. Using time zones and geolocations, individual time frames for each day of the year can serve as filters for night images.
 
-Since the COCO format does not provide information about which item is a NIR- and which item is an RGB image (\ref{item:requirement-split}.) \cite{caltech}, that information is not available before downloading.
+Since the COCO format does not provide information about which item is a NIR- and which item is an RGB image (\ref{item:requirement-split}.) \parencite{caltech}, that information is not available before downloading.
 Because both data sources provide their NIR images with \textit{colored} logos, they are stored in an RGB image where the actual image section has equal values over all three channels.
 Therefore, a pragmatic solution is to download the images and compare the three channels in a cropped version of the image (without the logo section).
 
@@ -77,30 +77,30 @@ For example, one could imagine that the mapping function which maps all $\x$ to 
 This case is called \textit{mode collapse} and can be weakened by adding additional structure to the training.
 
 In the following, we will concentrate on two options:
-1. Using a \textit{cycle consistency loss} which was introduced by Zhu \textit{et al.} for the network \textit{CycleGAN} \cite{cyclegan_orig}
-and 2. using a \textit{contrastive loss} that Park \textit{et al.} introduced into this environment for the network \textit{CUT} \cite{cut}.
+1. Using a \textit{cycle consistency loss} which was introduced by \citeauthor*{cyclegan_orig} for the network \textit{CycleGAN} \parencite{cyclegan_orig}
+and 2. using a \textit{contrastive loss} that \citeauthor*{cut} introduced into this environment for the network \textit{CUT} \parencite{cut}.
 
 \subsection{CycleGAN}
 
-CycleGAN is a network architecture presented by Zhu \textit{et al.} and introduces a \textit{cycle consistency loss} for image translations using GANs.
+CycleGAN is a network architecture presented by \citeauthor*{cyclegan_orig} and introduces a \textit{cycle consistency loss} for image translations using GANs.
 The idea is that the translation between the two domains should be "cycle consistent", meaning that when translating an image from NIR to RGB and back
 to NIR, both NIR images should be approximately equal.
 Mathematically, this means that we have an additional function $F: \mathcal{Y} \to \mathcal{X}$ which is approximately the inverse of $G$. For a $\x \in \mathcal{X}$, $F(G(\x)) \approx \x$.
-This is encouraged using a \textit{cycle consistency loss} \cite{cyclegan_orig}. We assume that if a $\x$ is recoverable from a $\y = G(\x)$ using $F$, the content of $\x$
-is preserved in $\y$ \cite{cyclegan_orig} (\autoref{fig:cycle-gan}).
+This is encouraged using a \textit{cycle consistency loss} \parencite{cyclegan_orig}. We assume that if a $\x$ is recoverable from a $\y = G(\x)$ using $F$, the content of $\x$
+is preserved in $\y$ \parencite{cyclegan_orig} (\autoref{fig:cycle-gan}).
 
 \begin{figure}[h]
    \includegraphics[width=\textwidth]{gfx/CycleGAN.pdf}
    \caption{
       \textbf{CycleGAN Schema.} Two generators $G$ and $F$ translate between both domains. Forward Cycle Consistency is ensured using the input and recovered NIR image.
-      The discriminator $D_Y$ encourages the generator $G$ to learn the features of domain $\mathcal{Y}$ \cite{cyclegan_orig,mehri2019colorizing}.
+      The discriminator $D_Y$ encourages the generator $G$ to learn the features of domain $\mathcal{Y}$ \parencite{cyclegan_orig,mehri2019colorizing}.
    }
    \label{fig:cycle-gan}
 \end{figure}
 
 \subsubsection*{Cycle Consistency Loss}
 This objective is written as a loss function $\mathcal{L}_{cyc}(G, F)$ which uses an L1 norm to encourage cycle consistency (\autoref{eqn:cyc}).
-In addition to \textit{forward cycle consistency}, CycleGAN also utilizes \textit{backward cycle consistency} which means that for $\y \in \mathcal{Y}$, $G(F(\y)) \approx \y$ \cite{cyclegan_orig} applies, too (\autoref{fig:cycle-gan}).
+In addition to \textit{forward cycle consistency}, CycleGAN also utilizes \textit{backward cycle consistency} which means that for $\y \in \mathcal{Y}$, $G(F(\y)) \approx \y$ \parencite{cyclegan_orig} applies, too (\autoref{fig:cycle-gan}).
 
 \begin{equation}
    \label{eqn:cyc}
@@ -110,11 +110,11 @@ In addition to \textit{forward cycle consistency}, CycleGAN also utilizes \texti
    \end{aligned}
 \end{equation}
 
-In addition to the L1 cycle consistency loss, Mehri \textit{et al.} propose using \textit{structural similarity index measurement} (SSIM) as the second cycle consistency loss \cite{mehri2019colorizing}.
-Contrary to the L1 loss, SSIM measures the differences between the images not by the absolute image intensity values but by comparing two images based on luminance-, contrast- and structural similarity \cite{ssim}.
+In addition to the L1 cycle consistency loss, \citeauthor*{mehri2019colorizing} propose using \textit{structural similarity index measurement} (SSIM) as the second cycle consistency loss \parencite{mehri2019colorizing}.
+Contrary to the L1 loss, SSIM measures the differences between the images not by the absolute image intensity values but by comparing two images based on luminance-, contrast- and structural similarity \parencite{ssim}.
 
 Using measurements for luminance $l(\y_1, \y_2)$, contrast $c(\y_1,\y_2)$ and structure comparison $s(\y_1, \y_2)$, we can obtain the overall structural similarity
-index $SSIM(\y_1, \y_2)$ as multiplication of each component (\autoref{eqn:ssim}) \cite{ssim}.
+index $SSIM(\y_1, \y_2)$ as multiplication of each component (\autoref{eqn:ssim}) \parencite{ssim}.
 
 \begin{equation}
    \label{eqn:ssim}
@@ -146,9 +146,9 @@ Finally, the loss of cycle consistency $\mathcal{L}_{SSIM}(G, F)$ can be constru
 \subsubsection*{Relativistic Adversarial Loss}
 For both generators, adversarial discriminators $D_X$ and $D_Y$ are introduced where $D_X$ has the aim of distinguishing between real images
 $X$ and generated images $\{F(\y)\}$ and $D_Y$ for $Y$ and $\{G(\x)\}$.
-For both, we apply a relativistic GAN, in particular, \textit{RaLSGAN} \cite{mehri2019colorizing,rel_gan}.
+For both, we apply a relativistic GAN, in particular, \textit{RaLSGAN} \parencite{mehri2019colorizing,rel_gan}.
 \autoref{eqn:ralsgan} demonstrates the RaLSGAN loss for the generator $G$ ($\mathcal{L}^G_{RaLSGAN}(G,D_Y,X,Y)$) and its discriminator
-$D_Y$ ($\mathcal{L}^D_{RaLSGAN}(G,D_Y,X,Y)$) (\autoref{fig:cycle-gan}). The loss for $F$ and $D_X$ is defined in the same way as for $G$ and $D_Y$ \cite{rel_gan}.
+$D_Y$ ($\mathcal{L}^D_{RaLSGAN}(G,D_Y,X,Y)$) (\autoref{fig:cycle-gan}). The loss for $F$ and $D_X$ is defined in the same way as for $G$ and $D_Y$ \parencite{rel_gan}.
 
 \begin{equation}
    \label{eqn:ralsgan}
@@ -163,7 +163,7 @@ $D_Y$ ($\mathcal{L}^D_{RaLSGAN}(G,D_Y,X,Y)$) (\autoref{fig:cycle-gan}). The loss
 \subsection*{Identity Loss}
 Lastly, the identity loss has the aim of regulating the generator:
 If an image already appears like a colored RGB image, it should not be modified.
-This leads to the identity loss $\mathcal{L}_{identiy}$ (\autoref{eqn:identity_loss}) \cite{mehri2019colorizing}.
+This leads to the identity loss $\mathcal{L}_{identiy}$ (\autoref{eqn:identity_loss}) \parencite{mehri2019colorizing}.
 
 \begin{equation}
    \label{eqn:identity_loss}
@@ -173,7 +173,7 @@ This leads to the identity loss $\mathcal{L}_{identiy}$ (\autoref{eqn:identity_l
 \end{equation}
 
 \subsection*{Full Objective}
-All those four loss functions lead to an additive final loss function (\autoref{eqn:cycle_gan_total_loss}) \cite{mehri2019colorizing}.
+All those four loss functions lead to an additive final loss function (\autoref{eqn:cycle_gan_total_loss}) \parencite{mehri2019colorizing}.
 $\lambda$ and $\gamma$ are weights for the relative importance of the L1 cycle consistency loss and the identity loss.
 
 \begin{equation}
@@ -184,29 +184,31 @@ $\lambda$ and $\gamma$ are weights for the relative importance of the L1 cycle c
 \end{equation}
 
 \subsubsection*{U-Net}
-In praxis, both functions $G$ and $F$ are generation networks. Contrary to the ResNet generators \cite{resnet} Zhu \textit{et al.} used in the original CycleGAN \cite{cyclegan_orig},
-Mehri \textit{et al.} propose U-Net generators \cite{unet}, because they perform better in learning the color \cite{mehri2019colorizing}.
-Additionally, U-Net generators also need less computational time for training compared to ResNet \cite{mehri2019colorizing}.
+In praxis, both functions $G$ and $F$ are generation networks. Contrary to the ResNet generators \parencite{resnet} \citeauthor{cyclegan_orig} used in the original CycleGAN \parencite{cyclegan_orig},
+\citeauthor*{mehri2019colorizing} propose U-Net generators \parencite{unet}, because they perform better in learning the color \parencite{mehri2019colorizing}.
+Additionally, U-Net generators also need less computational time for training compared to ResNet \parencite{mehri2019colorizing}.
 We input all three (equal) channels of the NIR image into the generator and receive an RGB image as output.
 All activations of the encode-blocks (except the last one) are inputs for two blocks:
-The following encode- as well as the corresponding decode-block. This is called a skip connection \cite{unet} (\autoref{fig:unet}). All decode-blocks (except the first one) receive input from the previous decode-block, as well as the corresponding encode-block.
-This leads to an architecture that can learn to "choose" how deep the feature abstraction should be \cite{unet}.
+The following encode- as well as the corresponding decode-block. This is called a skip connection \parencite{unet} (\autoref{fig:unet}). All decode-blocks (except the first one) receive input from the previous decode-block, as well as the corresponding encode-block.
+This leads to an architecture that can learn to "choose" how deep the feature abstraction should be \parencite{unet}.
 
 \begin{figure}[h]
    \includegraphics[width=\textwidth]{gfx/CycleGAN-Unet.pdf}
-   \caption{U-Net generator $G$ used in CycleGAN \cite{unet,mehri2019colorizing}}
+   \caption{
+      U-Net generator $G$ used in CycleGAN \parencite{unet,mehri2019colorizing}
+   }
    \label{fig:unet}
 \end{figure}
 
 \subsubsection*{Optimizations}
-Heusel \textit{et al.} demonstrated that using the \textit{two timescale update rule} (TTUR), which states that when the generator and the discriminator have different learning rates,
-mode collapse can be prevented in image translation tasks using GANs \cite{ttur}.
-Inspired by this, Mehri \textit{et al.} propose utilizing two learning rates for the CycleGAN architecture \cite{mehri2019colorizing}.
+\Citeauthor*{ttur} demonstrated that using the \textit{two timescale update rule} (TTUR), which states that when the generator and the discriminator have different learning rates,
+mode collapse can be prevented in image translation tasks using GANs \parencite{ttur}.
+Inspired by this, \citeauthor*{mehri2019colorizing} propose utilizing two learning rates for the CycleGAN architecture \parencite{mehri2019colorizing}.
 
-Additionally, Mehri \textit{et al.} propose the use of \textit{spectral normalization}, a technique introduced by Miyato \textit{et al.}, to stabilize the training of the discriminators $D_X$ and $D_Y$ \cite{spectral_norm, mehri2019colorizing}.
+Additionally, \citeauthor*{mehri2019colorizing} propose the use of \textit{spectral normalization}, a technique introduced by \Citeauthor*{spectral_norm}, to stabilize the training of the discriminators $D_X$ and $D_Y$ \parencite{spectral_norm, mehri2019colorizing}.
 
-Finally, Mehri \textit{et al.} observe that while the cycle consistency loss helps in the early training stages, it hinders the network in the later stages in generating realistic images \cite{mehri2019colorizing}.
-Therefore, Mehri \textit{et al.} propose to decrease the weight of the cycle consistency loss after half of the training process \cite{mehri2019colorizing}.
+Finally, \citeauthor*{mehri2019colorizing} observe that while the cycle consistency loss helps in the early training stages, it hinders the network in the later stages in generating realistic images \parencite{mehri2019colorizing}.
+Therefore, \citeauthor*{mehri2019colorizing} propose to decrease the weight of the cycle consistency loss after half of the training process \parencite{mehri2019colorizing}.
 
 \section{Diffusion Models}
 \subsection{Prerequisites}
