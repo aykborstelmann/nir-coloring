@@ -18,12 +18,12 @@ This is done for two image sets, and later the two Gaussians are compared using 
 Intuitively, if the generated images are realistic, the statistics of features in a classification network should be similar to the real ones.
 
 \subsubsection*{Evaluation of the FID}
-\label{cap:evaluate-fid}
+\label{sec:evaluate-fid}
 
 The FID is commonly used on a wide variety of unpaired image comparison tasks.
 
-Conceptually it first, it is only a distance metric between the features of two image sets. 
-The features are extracted using 
+Conceptually it first, it is only a distance metric between the features of two image sets.
+The features are extracted using
 
 
 \subsection{Qualitative Evaluation Methods}
@@ -38,8 +38,101 @@ The second category refers to the \textit{content preservation} of the input ima
 \section{Loss-Guided Diffusion and Strongly Guided-Diffusion}
 \section{Near-Infrared as Grayscale Approximation}
 \section{Diffusion and GAN}
+To study the difference between diffusion models and generative adversarial networks for near-infrared image colorization, we compare them for two specialized problems.
+
+First we evaluate the performances on the Caltech Camera Traps dataset (\autoref{sec:cct}) by \Citeauthor*{caltech}.
+The near-infrared images in the dataset are mostly taken during the night, while the color images are from the daytime \parencite{caltech}.
+Both networks are required to translate mostly night near-infrared images to colored images while having mostly seen day images.
+This results in artificial difficulty for the networks (\autoref{sec:diffusion-vs-cyclegan-day}).
+
+Secondly we evaluate both networks on a more application-oriented dataset.
+The subset of the Serengeti dataset we use consists mostly of night images for the near infrared domain as for the colored domain.
+As near-infared applications lie for the most part in generating high-quality night images this is closer to an application context.
+Because the networks are not required to perform a translation to colored night images, without having seen many of those, we consider
+this specialized problem as easier, which is also visible in the quality of the results (\autoref{sec:diffusion-vs-cyclegan-night})
+
 \subsection{Extended Dataset --- Robustness}
+\label{sec:diffusion-vs-cyclegan-day}
+Using the Caltech Camera Traps data split we introduced in \autoref{sec:cct},
+we train an unconditional diffusion model on the mostly colored daytime images from the training dataset.
+
+Our unconditional model is evaluated first to validate the model did learn to approximate the target distribution well.
+As visible in \autoref{fig:qualitative-evaluation-unconditional-sampling-caltech} qualitatively the diffusion network
+produces highly realistic images matching the style and diversity of the test dataset well.
+Quantitatively the samples achieve a fréchet inception distance of $100.22$ to the test data set.
+Compared with other FIDs in this work we consider it a good value.
+
+\begin{figure}[htp!]
+    \centering
+    \setkeys{Gin}{width=1\linewidth}
+    \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
+        RGB                                                                                                              & Diffusion                                                                               & RGB                                                                                                              & Diffusion                                                                               & RGB                                                                                                              & Diffusion                                                                               \\
+        \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_5858c0dc-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00000.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585a640e-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00001.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585a6486-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00002.png} \\
+        \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585dab96-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00003.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585f4d99-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00004.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585f4fbd-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00005.png} \\
+        \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_5860ef9d-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00006.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_58629181-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00007.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_58629415-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00008.png}
+    \end{tabularx}
+    \caption{
+        %TODO
+        Left to Right Continuing: Sample image from the test caltech datatset \parencite{caltech} and sample generated by the unconditional diffusion model.
+    }
+    \label{fig:qualitative-evaluation-unconditional-sampling-caltech}
+\end{figure}
+
+Next our CycleGAN network is trained with images from both domains to learn a function while maintaining a cycle-consistency property according to \autoref{sec:methods-cycle-gan}.
+We sample using our sampling procedure with the diffusion model given the near-infrared images of the test dataset (TODO) and simultaneously
+sample using CycleGAN.
+
+\begin{figure}[htp!]
+    \centering
+    \setkeys{Gin}{width=1\linewidth}
+    \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
+        NIR                                                                                                            & CycleGAN                                                                                                                 & Diffusion                                                                                                            & NIR                                                                                                            & CycleGAN                                                                                                                 & Diffusion                                                                                                            \\
+        \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/nir_585a6303-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/cyclegan_585a6303-23d2-11e8-a6a3-ec086b02610b_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/diffusion_585a6303-23d2-11e8-a6a3-ec086b02610b.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/nir_585a6394-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/cyclegan_585a6394-23d2-11e8-a6a3-ec086b02610b_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/diffusion_585a6394-23d2-11e8-a6a3-ec086b02610b.png} \\
+        \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/nir_585c042f-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/cyclegan_585c042f-23d2-11e8-a6a3-ec086b02610b_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/diffusion_585c042f-23d2-11e8-a6a3-ec086b02610b.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/nir_585c05fe-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/cyclegan_585c05fe-23d2-11e8-a6a3-ec086b02610b_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/diffusion_585c05fe-23d2-11e8-a6a3-ec086b02610b.png} \\
+        \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/nir_5860ede3-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/cyclegan_5860ede3-23d2-11e8-a6a3-ec086b02610b_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/diffusion_5860ede3-23d2-11e8-a6a3-ec086b02610b.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/nir_586437e6-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/cyclegan_586437e6-23d2-11e8-a6a3-ec086b02610b_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/diffusion_586437e6-23d2-11e8-a6a3-ec086b02610b.png}
+    \end{tabularx}
+    \caption{
+        TODO
+    }
+    \label{fig:qualitative-evaluation-conditional-sampling-caltech}
+\end{figure}
+
+\begin{table}[htp!]
+    \centering
+    \begin{tabular}{c | c}
+        Model                   & FID  $\downarrow$ \\
+        \hline\hline
+        CycleGAN                & 114.21            \\
+        Unconditional Diffusion & 153.63
+    \end{tabular}
+    \caption{
+        \textbf{Quantitative Evaluation.} TODO
+    }
+    \label{fig:quantitative-evaluation-conditional-sampling-caltech}
+\end{table}
+
+While neither CycleGAN nor the diffusion model perform great given this problem, we can use this problem to analyze both strengths and weaknesses.
+We observe that CycleGAN hallucinates much.
+Many artifacts such as green patterns where otherwise darkness would be expected are created (\autoref{fig:qualitative-evaluation-conditional-sampling-caltech}).
+It seems that CycleGAN produces features which are common for day images without validating they exist in the input.
+For the human eye such artifacts make the images less realistic. Additionally, the faithfulness and content preservation is also reduced.
+
+On the other the diffusion model does not create such hallucinations and is generally faithful to the input image by design.
+Its samples appear rather monochrome than colored (\autoref{fig:qualitative-evaluation-conditional-sampling-caltech}).
+When comparing with the unconditional sampling, this indicates the diffusion model learned to approximate the target domain in daytime areas well, but is unfamiliar with nighttime images.
+The restriction of the diffusion model sampling to keep the intensities of the near-infared image forces the model to stay in unfamiliar areas of the high-dimensional space.
+This leads to less colorization by the model.
+
+When comparing the fréchet inception distance, CycleGAN performs much better than the diffusion model having a difference of 39.42 points (\autoref{fig:quantitative-evaluation-conditional-sampling-caltech}).
+The FID calculates the difference between the test dataset's colored images and those produced by our models.
+The test dataset's colored images are mostly day images.
+Therefore, the superiority of the CycleGAN considering the FID is not surprising.
+Unrealistic and unfaithful artifacts discovered in the qualitative evaluation lead to a higher similarity to day images from the test dataset.
+The diffusion model on the other hand produces less colored night images, which results to a higher distance between the test dataset.
+In this case the FID appears to be a metric not well suited for this evaluation, wee further discussion this in \autoref{sec:evaluate-fid} and suggest improvements in \autoref{sec:future-work}.
+
 \subsection{General Comparison}
+\label{sec:diffusion-vs-cyclegan-night}
 Finally, we study the diffusion models performance in comparison to CycleGAN.
 An unconditional diffusion model for a resolution of $128 \times 128$ was trained on the RGB domain of the same training dataset as CycleGAN.
 
@@ -124,7 +217,7 @@ We compare performances of our trained CycleGAN with our conditional diffusion n
 In this case strong guidance with the NIR $\approx$ Intensity approximation is used.
 \autoref{fig:quantitative-evaluation-conditiona-sampling} indicates strong performance of the conditional
 diffusion network only, $\sim 6$ FID points worse than CycleGAN.
-Considering the flaws analyzed and observed in \autoref{cap:evaluate-fid} those points are only a small difference.
+Considering the flaws analyzed and observed in \autoref{sec:evaluate-fid} those points are only a small difference.
 Furthermore, qualitatively we can also observe those generated images are faithful to the input image (\autoref{fig:qualitative-evaluation-conditional-sampling}).
 It is to be mentioned that faithfulness to the input image is not a quality learned by the network, but a design choice of the sampling procedure.
 Additionally, colors estimated by the diffusion model appear reasonable.
@@ -185,17 +278,17 @@ which results in overall more realistic images.
 
 This subtle difference between the CycleGAN and the diffusion model samples with CycleGAN intensity inputs is also visible while comparing the images quantitatively in \autoref{fig:quantitative-evaluation-cyclegan-conditional-sampling}.
 The diffusion model performs better than CycleGAN when the intensities are appropriate.
-It is not expected by the diffusion model to perform better than in the unconditional setting (assuming test dataset and train dataset are divided appropriately). 
+It is not expected by the diffusion model to perform better than in the unconditional setting (assuming test dataset and train dataset are divided appropriately).
 Because the diffusion model in the unconditional setting only performs $1.2$ FID points better (\autoref{fig:quantitative-evaluation-unconditional-sampling}) it is reasonable that those samples are the best this diffusion model can produce.
-This proves that the main weakness of our approach lies in the fixed intensity. 
+This proves that the main weakness of our approach lies in the fixed intensity.
 
 \begin{table}[htp!]
     \centering
     \begin{tabular}{c | c}
-        Model                                    & FID  $\downarrow$  \\
+        Model                                    & FID  $\downarrow$ \\
         \hline\hline
-        CycleGAN                                 & 98.10              \\
-        Diffusion with CycleGAN Intensity Inputs & \textbf{97.21} \\
+        CycleGAN                                 & 98.10             \\
+        Diffusion with CycleGAN Intensity Inputs & \textbf{97.21}    \\
         Diffusion with NIR Inputs                & 104.04
     \end{tabular}
     \caption{

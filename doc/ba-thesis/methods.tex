@@ -5,6 +5,7 @@ While examining both proposed methods for their suitability for near-infrared co
 and two data sources \textit{Caltech Camera Traps} \parencite{caltech} and \textit{Snapshot Serengeti} \parencite{serengeti} were used.
 
 \subsection{Caltech Camera Traps}
+\label{sec:cct}
 \textit{Caltech Camera Traps} (CCT) is a dataset consisting of $243.100$ images from $140$ camera locations
 in the southwestern United States with $21$ animal label categories \parencite{caltech}.
 In particular, it primarily contains near-infrared images for the night and regular RGB images for images captured during the day.
@@ -81,6 +82,7 @@ In the following, we will concentrate on two options:
 and 2. using a \textit{contrastive loss} that \citeauthor*{cut} introduced into this environment for the network \textit{CUT} \parencite{cut}.
 
 \subsection{CycleGAN}
+\label{sec:methods-cycle-gan}
 
 CycleGAN is a network architecture presented by \citeauthor*{cyclegan_orig} and introduces a \textit{cycle consistency loss} for image translations using GANs.
 The idea is that the translation between the two domains should be "cycle consistent", meaning that when translating an image from NIR to RGB and back
