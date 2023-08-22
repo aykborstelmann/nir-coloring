@@ -1,5 +1,80 @@
-\chapter{Introduction} 
+\chapter{Introduction}
+For wildlife monitoring, typically camera traps are used. During daylight, normal cameras succeed in capturing detailed images.
+But in the absence of daylight \textit{near-infrared} (NIR) cameras or normal cameras using incandescent lighting are necessary.
+NIR cameras offer a significant advantage over conventional cameras using incandescent lighting.
+Light flashes are visible to animals and may frighten them, which leads animals to avoid the camera location afterward.
+Near-infrared light, however, is for most animals not visible, thus cannot scare them.
+However, unlike colored RGB images, NIR images lack colorization, which is essential for human comprehension and interpretation of visual information.
+Also, some classification- and animal detection solutions may benefit from three-channel RGB images.
+Therefore, the conversion of NIR images to colored RGB images can combine the advantages of both methods:
+Detail-rich images without scaring animals, that humans can easily interpret and classification and animal detection systems can benefit from.
 
-\enquote{Don't panic} \parencite{adams1979}
+Although colorizing NIR images is closely related to colorizing grayscale images (\textit{image colorization}), it differs in one important property:
+The luminance of grayscale images is the same as the luminance of colored images, thus only chrominance must be estimated by image colorization systems.
+The objects' reflection properties of near-infrared light differ from those of light from the visual spectrum.
+Consequently, due to the differing luminance between RGB and NIR images, conventional image colorization techniques cannot be applied.
 
-\section{Related Work} 
+Supervised solutions for this problem exist, but require NIR, RGB image pairs with pixel-to-pixel registration, and temporal synchronization:
+For each given NIR image the corresponding RGB image must have the same information on the pixel locations on both images and both images must be captured simultaneously to account for motion.
+However, there are many datasets consisting only of NIR images from the night and RGB images from the day.
+This results in an unpaired image translation problem for which unsupervised learning techniques must be applied.
+
+Current best approaches leverage \textit{Generative Adversarial Networks} (GANs) to conquer this unpaired image translation problem.
+\Citeauthor{mehri} introduced one of such \parencite{mehri}.
+But GANs are known for their unstable training manifesting in of mode collapse and hallucinations.
+
+Recently advances in \textit{diffusion models} showed superiority of such in comparison to GANs in various other image translation tasks.
+In contrary to GANs their training is more stable while simultaneously a higher sample diversity is observed.
+This suggests that diffusion models could also influence NIR colorization positively.
+
+To our best knowledge, we are the first to design a system for NIR colorization based on diffusion models.
+Our diffusion model merely needs to be trained on colored images and only the sampling procedure is adapted for NIR colorization.
+We compare our system with \Citeauthor*{mehri}'s GAN and show that our system outperforms it in terms of FID.
+Intuition for the design of our system is given based on our analysis of gray-scale colorization techniques.
+Additionally, we investigate the difference of correction-based- and loss-based sampling in our application
+context and show correction-based sampling's superiority.
+Furthermore, requirements for the training datasets are found that significantly affect the learning success.
+
+\section{Related Work}
+NIR colorization has many applications in addition to wildlife monitoring, for example in driver assistance systems or surveillance cameras.
+As a result, the research area of computer vision has studied image colorization during the last decades, therefore many solutions exist.
+Recently, deep learning-based approaches, especially convolutional neural networks (CNNs), have shown great success in colorizing NIR images \parencite{limmer}.
+Additionally, the recent developments of U-Net \parencite{unet} and ResNet \parencite{resnet}, which incorporate skip connection to significantly improve the network's performance, have also affected
+the NIR colorization solutions. As a result, these networks are now widely used \parencite{cyclegan-original,mehri,cut,s-shape}.
+
+In the case of NIR colorization, the solutions are divided into paired and unpaired image translation problems and thus supervised and unsupervised learning techniques are applied respectively.
+For paired image translation, pixel-to-pixel registration and temporal synchronization are required for each image pair, which adds additional challenges.
+
+\Citeauthor*{limmer} used a dataset acquired by a specialized multi-CCD camera which ensures the image pair requirements \parencite{limmer}.
+Additionally, \Citeauthor*{limmer} proposed to use Deep Multiscale CNNs.
+In pre-processing, a normalized image pyramid is constructed by the NIR input and in post-processing, the CNN output is enriched with details from the input image \parencite{limmer}.
+In later work, \Citeauthor*{s-shape} introduced an S-Shape network consisting of one U-Net-based encoder "ColorNet" and a shallow network that generates an edge loss function "EdgeNet" \parencite{s-shape}.
+\Citeauthor*{s-shape} achieved pixel-to-pixel registration using geometric transformations and feature-based correspondence methods \parencite{s-shape}.
+
+In recent years, GAN-based methods have emerged as a powerful approach to unpaired image translation, which can be used for NIR image colorization without the need for paired training data.
+This is especially useful if such data cannot be obtained, for example, due to dataset limitations.
+GANs by default tend to lose the content of the input image. CycleGAN as an architecture proposed by \Citeauthor*{cyclegan-original} uses a cycle consistency loss between the input and the generated image to solve that problem \cite{cyclegan-original}.
+It utilizes ResNet \parencite{resnet} as generator networks \parencite{cyclegan-original}.
+\Citeauthor*{cyclegan-camera-traps} trained CycleGAN on a wild-life dataset and show improved recognition results on the generated images compared to the NIR images \parencite{cyclegan-camera-traps}.
+\Citeauthor*{mehri} proposed a version of CycleGAN, specifically designed for the task of colorizing NIR images, which incorporates enhanced loss functions and utilizes U-Net as a generator \parencite{mehri}.
+
+More recently diffusion model advanced.
+
+
+\begin{enumerate}
+    \item Palette \cite{palette}
+    \item Diffusion Models Beat GAN's on Image synthesis \cite{diffusion-beats-gans}
+    \item ILVR \cite{ilvr}
+    \item Score-Based Generative Modeling Through Stochastic Differential Equations \cite{sbgm}
+    \item UNIT-DDPM \cite{unit-ddpm}
+    \item EGSDE \cite{egsde}
+    \item Repaint ? \cite{repaint}
+    \item A Study and Comprehensive Comparison of Visible-Infrared Image Fusion Techniques \cite{study-vis-nir-fusion}
+    \item NIR-RGB Fusion Methods: \url{https://scholar.google.de/scholar?hl=de&as_sdt=0%2C5&as_vis=1&q=nir+image+fusion+%7C+enhancement+gaussian+filter&btnG=}
+\end{enumerate}
+
+
+We compare those two GAN-based methods and concentrate on the unpaired image translation problem.
+
+
+%TODO somewhere: introduction, which wavelength are near-infrared, which are VIS ?

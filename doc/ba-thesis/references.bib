@@ -1,18 +1,4 @@
-@book{adams1979,
-	author={Douglas Adams}, 
-	title={The Hitchhiker's Guide to the Galaxy}, 
-	year={1979}, 
-	publisher={Pan Books},
-}
-
-@online{theoremofbenda,
-    author={The Infoshere},
-    title={Futurama theorem}, 
-    year={},
-    url={https://theinfosphere.org/Futurama_theorem},
-}
-
-@inproceedings{limmer2016infrared,
+@inproceedings{limmer,
   title        = {Infrared colorization using deep convolutional neural networks},
   author       = {Limmer, Matthias and Lensch, Hendrik PA},
   booktitle    = {2016 15th IEEE International Conference on Machine Learning and Applications (ICMLA)},
@@ -20,7 +6,7 @@
   year         = {2016},
   organization = {IEEE}
 }
-@inproceedings{dong2018infrared,
+@inproceedings{s-shape,
   title        = {Infrared image colorization using a s-shape network},
   author       = {Dong, Ziyue and Kamata, Sei-ichiro and Breckon, Toby P},
   booktitle    = {2018 25th IEEE International Conference on Image Processing (ICIP)},
@@ -28,7 +14,7 @@
   year         = {2018},
   organization = {IEEE}
 }
-@inproceedings{mehri2019colorizing,
+@inproceedings{mehri,
   title     = {Colorizing near infrared images through a cyclic adversarial approach of unpaired samples},
   author    = {Mehri, Armin and Sappa, Angel D},
   booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops},
@@ -65,14 +51,14 @@
   pages     = {770--778},
   year      = {2016}
 }
-@inproceedings{cyclegan_orig,
+@inproceedings{cyclegan-original,
   title     = {Unpaired image-to-image translation using cycle-consistent adversarial networks},
   author    = {Zhu, Jun-Yan and Park, Taesung and Isola, Phillip and Efros, Alexei A},
   booktitle = {Proceedings of the IEEE international conference on computer vision},
   pages     = {2223--2232},
   year      = {2017}
 }
-@inproceedings{cyclegan_camera_traps,
+@inproceedings{cyclegan-camera-traps,
   title        = {CycleGAN-Based Image Translation for Near-Infrared Camera-Trap Image Recognition},
   author       = {Gao, Renwu and Zheng, Siting and He, Jia and Shen, Linlin},
   booktitle    = {Pattern Recognition and Artificial Intelligence: International Conference, ICPRAI 2020, Zhongshan, China, October 19--23, 2020, Proceedings},
@@ -80,7 +66,7 @@
   year         = {2020},
   organization = {Springer International Publishing Cham}
 }
-@article{spectral_norm,
+@article{spectral-norm,
   title   = {Spectral normalization for generative adversarial networks},
   author  = {Miyato, Takeru and Kataoka, Toshiki and Koyama, Masanori and Yoshida, Yuichi},
   journal = {arXiv preprint arXiv:1802.05957},
@@ -134,19 +120,87 @@
   doi       = {doi:10.5061/dryad.5pt92},
   publisher = {Dryad Digital Repository}
 }
-@inproceedings{guo2017calibration,
-  title={On calibration of modern neural networks},
-  author={Guo, Chuan and Pleiss, Geoff and Sun, Yu and Weinberger, Kilian Q},
-  booktitle={International conference on machine learning},
-  pages={1321--1330},
-  year={2017},
-  organization={PMLR}
-}
-@article{dif-beat-gan,
+
+@article{diffusion-beats-gans,
   title={Diffusion models beat gans on image synthesis},
   author={Dhariwal, Prafulla and Nichol, Alexander},
   journal={Advances in neural information processing systems},
   volume={34},
   pages={8780--8794},
   year={2021}
+}
+@article{sbgm,
+  title={Score-based generative modeling through stochastic differential equations},
+  author={Song, Yang and Sohl-Dickstein, Jascha and Kingma, Diederik P and Kumar, Abhishek and Ermon, Stefano and Poole, Ben},
+  journal={arXiv preprint arXiv:2011.13456},
+  year={2020}
+}
+@inproceedings{rgb-nir-image-enhancement,
+  title={RGB--NIR image enhancement by fusing bilateral and weighted least squares filters},
+  author={Sharma, Vivek and Hardeberg, Jon Yngve and George, Sony},
+  booktitle={Color and Imaging Conference},
+  volume={2017},
+  number={25},
+  pages={330--338},
+  year={2017},
+  organization={Society for Imaging Science and Technology}
+}
+
+@article{ddpm,
+  title={Denoising diffusion probabilistic models},
+  author={Ho, Jonathan and Jain, Ajay and Abbeel, Pieter},
+  journal={Advances in neural information processing systems},
+  volume={33},
+  pages={6840--6851},
+  year={2020}
+}
+
+@inproceedings{repaint,
+  title={Repaint: Inpainting using denoising diffusion probabilistic models},
+  author={Lugmayr, Andreas and Danelljan, Martin and Romero, Andres and Yu, Fisher and Timofte, Radu and Van Gool, Luc},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={11461--11471},
+  year={2022}
+}
+
+@inproceedings{palette,
+  title={Palette: Image-to-image diffusion models},
+  author={Saharia, Chitwan and Chan, William and Chang, Huiwen and Lee, Chris and Ho, Jonathan and Salimans, Tim and Fleet, David and Norouzi, Mohammad},
+  booktitle={ACM SIGGRAPH 2022 Conference Proceedings},
+  pages={1--10},
+  year={2022}
+}
+
+@article{ilvr,
+  title={Ilvr: Conditioning method for denoising diffusion probabilistic models},
+  author={Choi, Jooyoung and Kim, Sungwon and Jeong, Yonghyun and Gwon, Youngjune and Yoon, Sungroh},
+  journal={arXiv preprint arXiv:2108.02938},
+  year={2021}
+}
+
+@article{unit-ddpm,
+  title={Unit-ddpm: Unpaired image translation with denoising diffusion probabilistic models},
+  author={Sasaki, Hiroshi and Willcocks, Chris G and Breckon, Toby P},
+  journal={arXiv preprint arXiv:2104.05358},
+  year={2021}
+}
+
+@article{egsde,
+  title={Egsde: Unpaired image-to-image translation via energy-guided stochastic differential equations},
+  author={Zhao, Min and Bao, Fan and Li, Chongxuan and Zhu, Jun},
+  journal={Advances in Neural Information Processing Systems},
+  volume={35},
+  pages={3609--3623},
+  year={2022}
+}
+
+@article{study-vis-nir-fusion,
+  title={From pyramids to state-of-the-art: a study and comprehensive comparison of visible--infrared image fusion techniques},
+  author={Sharma, Apoorav M and Dogra, Ayush and Goyal, Bhawna and Vig, Renu and Agrawal, Sunil},
+  journal={IET Image Processing},
+  volume={14},
+  number={9},
+  pages={1671--1689},
+  year={2020},
+  publisher={Wiley Online Library}
 }
