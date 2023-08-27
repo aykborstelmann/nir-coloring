@@ -1,4 +1,4 @@
-\chapter{Methods}
+\chapter{Data \& Methods}
 
 \section{Data}
 While examining both proposed methods for their suitability for near-infrared colorization, multiple datasets
@@ -28,13 +28,13 @@ Since both datasets (CCT and Snapshot Serengeti) are substantially larger than p
 The requirements for this subset strongly influence the training performance of the translation models.
 
 \begin{enumerate}
-      \item Both network architectures require the dataset to be divided into an input domain (NIR) and an output domain (RGB). \label{item:requirement-split}
-      \item To gain model performance in the main objective, which is to colorize the NIR images of \textit{animals}, it is important to choose only images that contain animals. \label{item:requirement-animal-filter}
-      \item Training with a variety of image locations proves to decrease overfitting for the translation, and therefore a uniform distribution of the available locations should be approximated.
-            Additionally, utilizing a random crop for each image can also help mitigate overfitting, and therefore, it is suggested. \label{item:requirement-weighted-sampling}
-      \item Since most NIR images are taken at night, the network should not be influenced to solve the more difficult
-            task of translating images from NIR night to RGB day. This can be achieved by only allowing night images for both
-            domains. \label{item:requirement-night}
+   \item Both network architectures require the dataset to be divided into an input domain (NIR) and an output domain (RGB). \label{item:requirement-split}
+   \item To gain model performance in the main objective, which is to colorize the NIR images of \textit{animals}, it is important to choose only images that contain animals. \label{item:requirement-animal-filter}
+   \item Training with a variety of image locations proves to decrease overfitting for the translation, and therefore a uniform distribution of the available locations should be approximated.
+         Additionally, utilizing a random crop for each image can also help mitigate overfitting, and therefore, it is suggested. \label{item:requirement-weighted-sampling}
+   \item Since most NIR images are taken at night, the network should not be influenced to solve the more difficult
+         task of translating images from NIR night to RGB day. This can be achieved by only allowing night images for both
+         domains. \label{item:requirement-night}
 \end{enumerate}
 
 
@@ -213,8 +213,201 @@ Finally, \citeauthor*{mehri} observe that while the cycle consistency loss helps
 Therefore, \citeauthor*{mehri} propose to decrease the weight of the cycle consistency loss after half of the training process \parencite{mehri}.
 
 \section{Diffusion Models}
+Denoising Diffusion Probabilistic Models as introduced by \cite{ddpm} are generative networks recently advancing.
+
 \subsection{Prerequisites}
+Our diffusion process consists of $T$ timesteps.
+$\x_0$ is the original image and $\x_T$ is the final noised image following an isotropic Gaussian distribution.
+
+With $q(\x_t | \x_{t-1})$ we denote the \textit{forward process}, which describes the distribution of $\x_t$ given a less noised $\x_{t-1}$:
+The forward process gradually adds Gaussian noise to the image determined by the \textit{variance schedule} $\beta_1, \dots, \beta_T$ \parencite[\autoref{eqn:forward-process-definition}]{ddpm}.
+
+\begin{equation}
+   \label{eqn:forward-process-definition}
+   \begin{aligned}
+      q(\mathbf{x}_t | \x_{t-1}) := & \mathcal{N}(\x_t; \sqrt{1 - \beta_t}\x_{t-1}, \beta_t \mathbf{I})                                            \\
+      \Rightarrow \x_t =            & \sqrt{1 - \beta_t}\x_{t-1} + \sqrt{\beta_t} \epsilon              & \epsilon \sim \mathcal{N}(0, \mathbb{I})
+   \end{aligned}
+\end{equation}
+
+To sample $\x_t \sim q(\x_t | \x_0)$, repeatedly sampling is not necessary, a closed form can be derived (\autoref{eqn:forward-process-closed-form}),
+while defining $\alpha_t := 1 - \beta_t$ and $\bar\alpha_t := \prod_{s=1}^t \alpha_s$ \parencite{ddpm}.
+
+\begin{equation}
+   \label{eqn:forward-process-closed-form}
+   \begin{aligned}
+      q(\x_t|\x_0)     & = \mathcal{N}(\x_t; \sqrt{\bar{\alpha}_t}\x_{0}, (1 - \bar{\alpha}_t) \mathbf{I})                                            \\
+      \Rightarrow \x_t & = \sqrt{\bar{\alpha}_t}\x_{0} + \sqrt{1 - \bar{\alpha}_t} \epsilon                & \epsilon \sim \mathcal{N}(0, \mathbb{I})
+   \end{aligned}
+\end{equation}
+
+The posterior $q(\x_{t-1}|\x_t, \x_0)$ can also be expressed as Gaussian $\mathcal{N}(\x_{t-1}; \tilde{\mu}(\x_t, \x_0), \tilde{\beta}_t\mathbf{I})$ where mean $\tilde{\mu}(\x_t, \x_0)$ and variance $\tilde{\beta}_t$
+are derivable using the Bayes theorem resulting in \autoref{eqn:mu-and-beta} \parencite{ddpm}.
+
+\begin{equation}
+   \label{eqn:mu-and-beta}
+   \begin{aligned}
+      \tilde{\mu}(\x_t, \x_0) & := \frac{\sqrt{\bar{\alpha}_{t-1}}\beta_t}{1 - \bar{\alpha}_{t}}\x_0 + \frac{\sqrt{\alpha_t}(1 - \bar{\alpha}_{t-1})}{1 - \bar{\alpha}_{t}}\x_t                                                            \\
+                              & = \frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_t \right)                                           & \text{where } \epsilon_t \sim \mathcal{N}(0, \mathbf{I}) \\
+      \tilde{\beta}_t         & := \frac{1 - \bar{\alpha}_{t-1}}{1 - \bar{\alpha}_t} \beta_t
+   \end{aligned}
+\end{equation}
+
+Sampling using a DDPM is then reversing this process.
+First a sample is obtained from the prior distribution $q(\x_T)$ which
+is nearly an isotropic Gaussian, therefore $\x_T \sim \mathcal{N}(0, \mathbf{I})$.
+Then we gradually \textit{denoise} our sample using $q(\x_{t-1}|\x_t)$ until $t = 0$.
+Because $q(\x_{t-1}|\x_t)$ is not trivial obtainable without knowing the data distribution,
+we leverage a neural network $p_\theta$ to approximate it.
+Where $\theta$ denote the parameters of the network.
+If $\beta_t$ is small enough it will also be Gaussian (\autoref{eqn:reverse-process}) \parencite{ddpm}.
+
+\begin{equation}
+   \label{eqn:reverse-process}
+   \begin{aligned}
+      p_\theta(\x_{t-1}|\x_t) := & \mathcal{N}(\x_{t-1};\mu_\theta(\x_t,t), \Sigma_\theta(\x_t,t))                                            \\
+      \Rightarrow \x_{t-1} =     & \mu_\theta(\x_t,t) + \sqrt{||\Sigma_\theta(\x_t,t)||} \epsilon  & \epsilon \sim \mathcal{N}(0, \mathbf{I})
+   \end{aligned}
+\end{equation}
+
+To train the neural network, one wants to minimize the log-likelihood $-\log p_\theta(\x_0)$.
+As this is difficult to train, a variational lower bound using the Kullback-Leibler divergence can be leveraged (\autoref{eqn:loss-vlb}).
+
+\begin{equation}
+   \label{eqn:loss-vlb}
+   \begin{aligned}
+             & -\log p_\theta(\x_0)                                                                                                                                                                                                           \\
+      \leq   & -\log p_\theta(\x_0) + D_{KL}(q(\x_{1:T}|\x_0) || p_\theta(\x_{1:T}|\x_0))                                                                                                                                                     \\
+      =      & \mathbb{E}_q\left[\log\left(\frac{q(\x_{1:T}|\x_0)}{p_\theta(\x_{0:T})}\right)\right]                                                                                                                                          \\
+      =      & \mathbb{E}_q\left[\log\left(\frac{\prod_{t=1}^Tq(\x_t|\x_{t-1})}{p_\theta(\x_T)\prod_{t=1}^Tp_\theta(\x_{t-1}|\x_t)}\right)\right]                                                                                             \\
+      =      & \mathbb{E}_q\left[\log\left(\frac{\prod_{t=1}^Tq(\x_t|\x_{t-1})}{p_\theta(\x_T)\prod_{t=1}^Tp_\theta(\x_{t-1}|\x_t)}\right)\right]                                                                                             \\
+      \vdots &                                                                                                                                                                                                                                \\
+      =      & \mathbb{E}_q\left[ \underbrace{D_{KL}(q(\x_T|\x_0)||p_\theta(\x_T))}_{L_T} + \sum_{t=2}^T \underbrace{D_{KL}(q(\x_{t-1}|\x_t,\x_0)||p_\theta(\x_{t-1}|\x_t))}_{L_{t-1}} \underbrace{ - \log p_\theta(\x_0|\x_1)}_{L_0} \right] \\
+   \end{aligned}
+\end{equation}
+
+We minimize our objective while minimizing the additive terms $L_T$, $L_{t-1}$ for all $t \in [2:T]$ and $L_0$.
+As $L_T$ is constant this can be ignored during training.
+Because every $D_{KL}$ term compares two Gaussian distributions, they can be computed in closed form.
+
+The term $L_{t-1}$ can be rewritten as the following (\autoref{eqn:loss-t-1}) where $C$ is a constant independent of $\theta$ and can therefore be ignored while minimizing.
+
+\begin{equation}
+   \label{eqn:loss-t-1}
+   L_{t-1}=\mathbb{E}_q\left[\frac{1}{2||\Sigma_\theta(\x_t,t)||_2^2}||\tilde{\mu}_t(\x_t,\x_0) - \mu_\theta(\x_t,t)||^2\right] + C
+\end{equation}
+
+This equation can be further expanded by utilizing \autoref{eqn:forward-process-closed-form} and \autoref{eqn:mu-and-beta}:
+
+\begin{equation}
+   L_{t-1} - C =\mathbb{E}_q\left[\frac{1}{2||\Sigma_\theta(\x_t,t)||_2^2}|| \frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_t \right) - \mu_\theta(\x_t,t)||^2\right]
+\end{equation}
+
+Because this reveals, that $\mu_\theta$ must predict $\frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_t \right)$ given $\x_t$ to minimize the loss,
+\cite{ddpm} choose to parameterize $\mu_\theta(\x_t, t)$ as follows, where $\epsilon_\theta$ is a function to predict $\epsilon$ given $\x_t$.
+
+\begin{equation}
+   \label{eqn:mu-theta-parameterization}
+   \mu_\theta(\x_t, t) = \frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_t \right)
+\end{equation}
+
+With parameterization \autoref{eqn:mu-and-beta}, the loss can be simplified as \autoref{eqn:epsilon-parameterized-loss}, as proposed by \cite{ddpm}.
+
+\begin{equation}
+   \label{eqn:epsilon-parameterized-loss}
+   \mathbb{E}_{\x_0, \epsilon}\left[ \frac{\beta_t^2}{2 ||\Sigma_\theta(\x_t,t)||_2^2 \alpha_t(1-\bar{\alpha}_t)} || \epsilon - \epsilon_\theta(\sqrt{\bar{\alpha}_t}\x_0 + \sqrt{1 - \bar{\alpha}_t} \epsilon,t) ||^2 \right]
+\end{equation}
+
+Furthermore, \cite{ddpm} found out that when not learning $\Sigma_\theta$, and fixing it by the beta-schedule, the loss \autoref{eqn:simple-loss} is even better for sample quality and is easier to implement.
+To be precise \cite{ddpm} fix $\Sigma_\theta(\x_t, t) = \sigma_t^2\mathbf{I}$ with either $\sigma_t^2 = \beta_t$ or $\sigma_t^2 = \tilde{\beta}_t$.
+
+\begin{equation}
+   \label{eqn:simple-loss}
+   L_{simple}(\theta) := \mathbb{E}_{t \sim [1,T], \x_0, \epsilon_t}\left[ || \epsilon_t - \epsilon_\theta(\sqrt{\bar{\alpha}_t}\x_0 + \sqrt{1 - \bar{\alpha}_t} \epsilon,t)  ||^2 \right]
+\end{equation}
+
+By this the training algorithm for this \textit{unconditional} can be derived as \autoref{alg:training} \parencite{ddpm}.
+
+\begin{algorithm}[htp!]
+   \caption{Training \parencite{ddpm}}
+   \label{alg:training}
+   \begin{algorithmic}
+      \Repeat
+      \State $\x_0 \sim q(\x_0)$
+      \State $t \sim \mathrm{Uniform}(\{1, \dots, T\})$
+      \State $\epsilon \sim \mathcal{N}(0, \mathbf{I})$
+      \State Take gradient step on $\nabla_\theta || \epsilon_t - \epsilon_\theta(\sqrt{\bar{\alpha}_t}\x_0 + \sqrt{1 - \bar{\alpha}_t} \epsilon,t) ||^2$
+      \Until{converged}
+   \end{algorithmic}
+\end{algorithm}
+
+
+
+Sampling with this unconditional model (\autoref{alg:sampling-unconditional}) then uses the reparameterization of the Gaussian distribution (\autoref{eqn:reverse-process})
+and the parameterization of the mean given an $\epsilon$ predicted by the model (\autoref{eqn:mu-theta-parameterization}) \parencite{ddpm}.
+
+
+\begin{algorithm}[htp!]
+   \caption{Unconditional Sampling \parencite{ddpm}}
+   \label{alg:sampling-unconditional}
+   \begin{algorithmic}
+      \State $\x_T \sim \mathcal{N}(0, \mathbf{I})$
+      \For{$t = T, \dots, 1$}
+      \State $\mathbf{z} \sim \mathcal{N}(0, \mathbf{I})$ \algorithmicif\ $t > 0$, \algorithmicelse\ $\mathbf{z} = 0$
+      \State $\x_{t-1} = \frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_\theta(\x_t, t) \right) + \sigma_t \mathbf{z}$
+      \EndFor
+      \Return $\x_0$
+   \end{algorithmic}
+\end{algorithm}
+
+
 \subsection{Loss-Guided Conditional Sampling}
 \label{sec:loss-guided-sampling}
 \subsection{Correction-Guided Conditional Sampling}
 \label{sec:correction-guided-sampling}
+
+Colorization can also be considered as specialized form of \textit{image inpainting} as \cite{sbgm} showed.
+Image inpainting is the task of restoring lost parts of an image congruent with the known areas of the image.
+In the case of colorization the known part is the \textit{intensity} while unknown are the remaining dimensions for a colored image, e.g. \textit{hue} and \textit{saturation}.
+
+Therefore, we first decompose the image into a disentangled representation using an orthogonal transformation.
+Then the
+
+\begin{algorithm}[htp!]
+   \caption{Colorization Sampling}
+   \label{alg:sampling-unconditional}
+   \begin{algorithmic}
+      \Require Reference gray-scale image $\y_0$
+      \State $\x_T \sim \mathcal{N}(0, \mathbf{I})$
+      \For{$t = T, \dots, 1$}
+         \State $\y_{t-1} \sim q(\y_{t-1}| \y_0)$
+         \State $\x_{t-1} \sim p_\theta(\x_{t-1}|\x_t)$
+         \State $\y_{t-1}^i, \y_{t-1}^r = $\ \Call{Decouple}{$\y_{t-1}$}
+         \State $\x_{t-1}^i, \x_{t-1}^r = $\ \Call{Decouple}{$\x_{t-1}$}
+         \State $\x_{t-1}=$ \ \Call{Couple}{$\y_{t-1}^i$,$\x_{t-1}^r$}
+      \EndFor
+      \Return $\x_0$
+   \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[htp!]
+   \caption{NIR-Colorization Sampling}
+   \label{alg:sampling-unconditional}
+   \begin{algorithmic}
+      \Require Reference gray-scale image $\y_0$
+      \State $\x_T \sim \mathcal{N}(0, \mathbf{I})$
+      \For{$t = T, \dots, 1$}
+         \State $\y_{t-1} \sim q(\y_{t-1}| \y_0)$
+         \State $\x_{t-1} \sim p_\theta(\x_{t-1}|\x_t)$
+         \State $\y_{t-1}^i, \y_{t-1}^r = $\ \Call{decouple\_color}{$\y_{t-1}$}
+         \State $\x_{t-1}^i, \x_{t-1}^r = $\ \Call{decouple\_color}{$\x_{t-1}$}
+         \State $\x_{t-1}^{i,l}, \x_{t-1}^{i,h} =$\ \Call{decompose\_frequencies}{$\x_{t-1}^i$} 
+         \State $\y_{t-1}^{i,l}, \y_{t-1}^{i,h} =$\ \Call{decompose\_frequencies}{$\y_{t-1}^i$} 
+         \State $\x_{t-1}=$ \ \Call{Couple}{$\y_{t-1}^i$,$\x_{t-1}^r$}
+      \EndFor
+      \Return $\x_0$
+   \end{algorithmic}
+\end{algorithm}
+
+Similar to \cite{ilvr} or \cite{repaint} we decide to refine the latent variable in each sampling iteration.
+

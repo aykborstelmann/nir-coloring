@@ -58,16 +58,20 @@ It utilizes ResNet \parencite{resnet} as generator networks \parencite{cyclegan-
 \Citeauthor*{cyclegan-camera-traps} trained CycleGAN on a wild-life dataset and show improved recognition results on the generated images compared to the NIR images \parencite{cyclegan-camera-traps}.
 \Citeauthor*{mehri} proposed a version of CycleGAN, specifically designed for the task of colorizing NIR images, which incorporates enhanced loss functions and utilizes U-Net as a generator \parencite{mehri}.
 
-More recently diffusion model advanced.
+More recently diffusion model advanced. 
+In contrast to GANs score based models iteratively perturb images using Gaussian noise and learn the inverse process. 
+After training such models are then given purely random Gaussian noise which the network the denoises to an image matching the target distribution. 
+
 
 
 \begin{enumerate}
-    \item Palette \cite{palette}
+    \item DDPM \cite{ddpm}
     \item Diffusion Models Beat GAN's on Image synthesis \cite{diffusion-beats-gans}
-    \item ILVR \cite{ilvr}
     \item Score-Based Generative Modeling Through Stochastic Differential Equations \cite{sbgm}
-    \item UNIT-DDPM \cite{unit-ddpm}
+    \item Palette \cite{palette}
+    \item ILVR \cite{ilvr}
     \item EGSDE \cite{egsde}
+    \item UNIT-DDPM ? \cite{unit-ddpm}
     \item Repaint ? \cite{repaint}
     \item A Study and Comprehensive Comparison of Visible-Infrared Image Fusion Techniques \cite{study-vis-nir-fusion}
     \item NIR-RGB Fusion Methods: \url{https://scholar.google.de/scholar?hl=de&as_sdt=0%2C5&as_vis=1&q=nir+image+fusion+%7C+enhancement+gaussian+filter&btnG=}
