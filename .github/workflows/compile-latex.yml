@@ -1,0 +1,18 @@
+name: Compile Latex
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Compile latex
+      uses: xu-cheng/latex-action@v2
+      with:
+        root_file: doc/ba-thesis/thesis.tex
+        latexmk_use_xelatex: true
+    - uses: actions/upload-artifact@v3
+      with:
+        name: PDF
+        path: thesis.pdf
