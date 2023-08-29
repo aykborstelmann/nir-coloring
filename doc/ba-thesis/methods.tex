@@ -1,4 +1,4 @@
-\chapter{Data \& Methods}
+\chapter{Data and Methods}
 
 \section{Data}
 While examining both proposed methods for their suitability for near-infrared colorization, multiple datasets
@@ -265,8 +265,8 @@ If $\beta_t$ is small enough it will also be Gaussian (\autoref{eqn:reverse-proc
 \begin{equation}
    \label{eqn:reverse-process}
    \begin{aligned}
-      p_\theta(\x_{t-1}|\x_t) := & \mathcal{N}(\x_{t-1};\mu_\theta(\x_t,t), \Sigma_\theta(\x_t,t))                                            \\
-      \Rightarrow \x_{t-1} =     & \mu_\theta(\x_t,t) + \sqrt{||\Sigma_\theta(\x_t,t)||} \epsilon  & \epsilon \sim \mathcal{N}(0, \mathbf{I})
+      p_\theta(\x_{t-1}|\x_t) & := \mathcal{N}(\x_{t-1};\mu_\theta(\x_t,t), \Sigma_\theta(\x_t,t))                                            \\
+      \Rightarrow \x_{t-1}    & = \mu_\theta(\x_t,t) + \sqrt{||\Sigma_\theta(\x_t,t)||} \epsilon   & \epsilon \sim \mathcal{N}(0, \mathbf{I})
    \end{aligned}
 \end{equation}
 
@@ -360,54 +360,244 @@ and the parameterization of the mean given an $\epsilon$ predicted by the model 
    \end{algorithmic}
 \end{algorithm}
 
+\todo{Section with implementation, such as U-Net for $\epsilon$ prediction, ...}
 
-\subsection{Loss-Guided Conditional Sampling}
-\label{sec:loss-guided-sampling}
+\todo{Structural comparison with CycleGAN}
+
+\subsection{Conditional Sampling}
+\label{sec:conditional-sampling}
+As now the unconditional sampling is derived, our application context of NIR colorization does not benefit from it yet. 
+A method is needed to \textit{condition} our diffusion model on the given NIR image. 
+We now derive a general purpose conditioning method as \textcite{sbgm,diffusion-beats-gans} introduced them and show in \autoref{sec:correction-guided-sampling} and \autoref{sec:energy-guided-sampling} 
+two different way of leveraging to achieve our goal. 
+
+Given a Gaussian distribution $p(\x) = \mathcal{N}(\x, \mu, \sigma^2 \mathbf{I})$ the derivative of the density function $\nabla_\x \log p(\x)$, called \textit{score-function} can be rewritten as in \autoref{eqn:score-function} for an $\epsilon \sim \mathcal{N}(0, \mathbf{I})$ \parencite{sbgm}.
+
+\begin{equation}
+   \label{eqn:score-function}
+   \nabla_\x \log p(\x) = \nabla_\x \left( - \frac{1}{2\cdot\sigma^2}(\x-\mu)^2\right) = - \frac{\x - \mu}{\sigma^2} = - \frac{\epsilon}{\sigma^2}
+\end{equation}
+
+If we would now calculate the score-function of our reverse process $p_\theta(\x_t)$ (\autoref{eqn:reverse-process})
+we find a connection between score-functions and our noise estimator network \parencite{sbgm}, see \autoref{eqn:score-function-p}.
+
+\begin{equation}
+   \label{eqn:score-function-p}
+   \nabla_{\x_t} \log p_\theta(\x_t) = - \frac{\epsilon_\theta(\x_t, t)}{\sqrt{1 - \bar{\alpha}_t}}
+\end{equation}
+
+If we want now to sample using a condition $\ce$, then we would need to sample from the distribution $p_\theta(\x_t | \ce)$ each iteration.
+To be able to sample from this distribution we can derive an new noise estimator $\bar{\epsilon}_\theta(\x_t, \ce, t)$ which 
+separates the conditioning $p_\theta(\ce|\x_t)$ and the unconditional noise estimator $\epsilon_\theta(\x_t, t)$ (\autoref{eqn:derive-new-noise-estimator}) \parencite{sbgm,diffusion-beats-gans}.
+
+\begin{equation}
+   \label{eqn:derive-new-noise-estimator}
+   \begin{aligned}
+      \nabla_{\x_t} \log p_\theta(\x_t|\ce)           & = \nabla_{\x_t} \log p_\theta(\x_t|\ce)                                                                                                                                                           \\
+                                                      & = \nabla_{\x_t} \log \left( \frac{p_\theta(\x_t) \cdot p_\theta(\ce|\x_t)}{p_\theta(\ce)} \right)                                                                                                 \\
+                                                      & = \nabla_{\x_t} \left( \log p_\theta(\x_t) + \log p_\theta(\ce|\x_t) - p_\theta(\ce) \right)                                                                                                      \\
+                                                      & = \nabla_{\x_t} \log p_\theta(\x_t) + \nabla_{\x_t} \log p_\theta(\ce|\x_t)                                                                                                                       \\
+                                                      & =  - \frac{\epsilon_\theta(\x_t, t)}{\sqrt{1 - \bar{\alpha}_t}} + \nabla_{\x_t} \log p_\theta(\ce|\x_t)                                                                                           \\
+                                                      & = -\frac{1}{\sqrt{1 - \bar{\alpha}_t}} \underbrace{\left(\epsilon_\theta(\x_t, t) - \sqrt{1 - \bar{\alpha}_t} \nabla_{\x_t} \log p_\theta(\ce|\x_t)\right)}_{\bar{\epsilon}_\theta(\x_t, \ce, t)} \\
+                                                      & = -\frac{\bar{\epsilon}_\theta(\x_t, \ce, t)}{\sqrt{1 - \bar{\alpha}_t}}                                                                                                                          \\
+      \\
+      \Rightarrow \bar{\epsilon}_\theta(\x_t, \ce, t) & = \epsilon_\theta(\x_t, t) - \sqrt{1 - \bar{\alpha}_t} \nabla_{\x_t} \log p_\theta(\ce|\x_t)
+      \text{\todo{Double Check}}
+   \end{aligned}
+\end{equation}
+
+Therefore, it is possible to use a general purpose unconditional diffusion model and conditional sample with it.
+It is only needed to calculate or approximate the score-function $\nabla_{\x_t} \log p_\theta(\ce|\x_t)$ \parencite{diffusion-beats-gans}.
+\autoref{alg:sampling-conditional} shows how to conditional sampling is implemented.
+
+\begin{algorithm}[htp!]
+   \caption{Conditional Sampling}
+   \label{alg:sampling-conditional}
+   \begin{algorithmic}
+      \Require A score-function $\nabla_{\x_t} \log p_\theta(\ce|\x_t)$ modeling the derivative of the log of the density function to the condition $\ce$ given a noised image $\x_t$. 
+      \State $\x_T \sim \mathcal{N}(0, \mathbf{I})$
+      \For{$t = T, \dots, 1$}
+      \State $\mathbf{z} \sim \mathcal{N}(0, \mathbf{I})$ \algorithmicif\ $t > 0$, \algorithmicelse\ $\mathbf{z} = 0$
+      \State $\bar{\epsilon}_{\theta, t} = \epsilon_\theta(\x_t, t) - \sqrt{1 - \bar{\alpha}_t} \nabla_{\x_t} \log p_\theta(\ce|\x_t)$
+      \State $\x_{t-1} = \frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \bar{\epsilon}_{\theta, t} \right) + \sigma_t \mathbf{z}$
+      \EndFor
+      \Return $\x_0$
+   \end{algorithmic}
+\end{algorithm}
+
 \subsection{Correction-Guided Conditional Sampling}
 \label{sec:correction-guided-sampling}
 
-Colorization can also be considered as specialized form of \textit{image inpainting} as \cite{sbgm} showed.
+\subsubsection{Gray-Scale Colorization}
+
+Colorization can also be considered as specialized form of \textit{image inpainting} as \textcite{sbgm} showed.
 Image inpainting is the task of restoring lost parts of an image congruent with the known areas of the image.
-In the case of colorization the known part is the \textit{intensity} while unknown are the remaining dimensions for a colored image, e.g. \textit{hue} and \textit{saturation}.
-
-Therefore, we first decompose the image into a disentangled representation using an orthogonal transformation.
-Then the
+In the case of grayscale-colorization the known part is the \textit{intensity} while unknown are the remaining dimensions for a colored image, e.g. \textit{hue} and \textit{saturation}.
+Therefore, we first sample in each iteration $t-1$ a $\tilde{\x}_{t-1}$ from the diffusion model given $\x_t$ using $p_\theta(\tilde{\x}_{t-1}|\x_t)$.
+Simultaneously, we diffuse our input image $\y_0$ to the timestep $t-1$ using $q(\y_{t-1}, \y_0)$.
+We then decompose both images into their intensity parts $\tilde{\x}_{t-1}^I$, $\y_{t-1}^I$ and the remaining parts $\tilde{\x}_{t-1}^R$, $\y_{t-1}^R$ using \textproc{DecoupleIntensity}, so that no information is lost.
+The noised input image's intensity $\y_{t-1}^I$ is then combined with the color information of the sample $\tilde{\x}_{t-1}^I$ and transformed back into the RGB domain using \textproc{CoupleIntensity} to obtain $\x_{t-1}$.
+We implement this colorization approach according to \autoref{alg:sampling-gray-scale-colorization} and evaluate it for NIR colorization in \autoref{sec:nir-as-intensity-approximation-evaluation}.
 
 \begin{algorithm}[htp!]
-   \caption{Colorization Sampling}
-   \label{alg:sampling-unconditional}
+   \caption{Gray-Scale Colorization Sampling}
+   \label{alg:sampling-gray-scale-colorization}
    \begin{algorithmic}
       \Require Reference gray-scale image $\y_0$
       \State $\x_T \sim \mathcal{N}(0, \mathbf{I})$
       \For{$t = T, \dots, 1$}
-         \State $\y_{t-1} \sim q(\y_{t-1}| \y_0)$
-         \State $\x_{t-1} \sim p_\theta(\x_{t-1}|\x_t)$
-         \State $\y_{t-1}^i, \y_{t-1}^r = $\ \Call{Decouple}{$\y_{t-1}$}
-         \State $\x_{t-1}^i, \x_{t-1}^r = $\ \Call{Decouple}{$\x_{t-1}$}
-         \State $\x_{t-1}=$ \ \Call{Couple}{$\y_{t-1}^i$,$\x_{t-1}^r$}
+      \State $\y_{t-1} \sim q(\y_{t-1}| \y_0)$
+      \State $\tilde{\x}_{t-1} \sim p_\theta(\x_{t-1}|\x_t)$
+      \State $\y_{t-1}^I, \y_{t-1}^R = $\ \Call{DecoupleIntensity}{$\y_{t-1}$}
+      \State $\tilde{\x}_{t-1}^I, \tilde{\x}_{t-1}^R=$\ \Call{DecoupleIntensity}{$\tilde{\x}_{t-1}$}
+      \State $\x_{t-1}=$ \ \Call{CoupleIntensity}{$\y_{t-1}^I$,$\tilde{\x}_{t-1}^R$}
       \EndFor
       \Return $\x_0$
    \end{algorithmic}
 \end{algorithm}
 
+We call this method \textit{correction-guided} sampling since we guide the sampling process by \textit{correcting} the sample in each iteration.
+
+\textproc{DecoupleIntensity} and \textproc{CoupleIntensity} can theoretically be any invertible transformation where the intensity is decoupled from the color information.
+Intuitive options would be color spaces such as HSI, HSV, LAB, YCbCr, \dots,
+but we found empirically that transforming the RGB image using an orthogonal matrix where the resulting space's first dimension is the intensity to give best results:
+
+We search for a matrix $C \in \mathbb{R}^{3\times3}$ such that for any RGB pixel $p = \begin{pmatrix}r & g &b\end{pmatrix} \in \mathbb{R}^3$ and a fixed scalar $a \in \mathbb{R}$ the requirements of \autoref{eqn:requirements-c} are fulfilled.
+\begin{equation}
+   \label{eqn:requirements-c}
+   \begin{aligned}
+      p' & = p \cdot C \Rightarrow p'_1 = a \cdot (r + g + b) \\
+      p  & = (p \cdot C) \cdot C^T
+   \end{aligned}
+\end{equation}
+
+This can be obtained by a system of equations or QR decomposition. \todo{Check QR-decomposition statement}
+We derive the matrix $C$ as \autoref{eqn:matrix-c-used}, while \autoref{eqn:matrix-c-ref} is a different solution to the requirements as \textcite{sbgm} obtained it.
+
+\begin{align}
+   C_1 & =
+   \begin{pmatrix}
+      \frac{1}{\sqrt{3}} & - \sqrt{\frac{2}{3}} & 0                   \\
+      \frac{1}{\sqrt{3}} & \frac{1}{\sqrt{6}}   & \frac{1}{\sqrt{2}}  \\
+      \frac{1}{\sqrt{3}} & \frac{1}{\sqrt{6}}   & -\frac{1}{\sqrt{2}}
+   \end{pmatrix}
+   \approx
+   \begin{pmatrix}
+      0.577 & -0.816 & 0      \\
+      0.577 & 0.408  & 0.707  \\
+      0.577 & 0.408  & -0.707
+   \end{pmatrix}
+   \label{eqn:matrix-c-ref} \\
+   C_2 & =
+   \begin{pmatrix}
+      \frac{1}{\sqrt{3}} & -\frac{1}{2} - \frac{1}{2\sqrt{3}} & \frac{1}{2} - \frac{1}{2\sqrt{3}}  \\
+      \frac{1}{\sqrt{3}} & \frac{1}{2} - \frac{1}{2\sqrt{3}}  & -\frac{1}{2} - \frac{1}{2\sqrt{3}} \\
+      \frac{1}{\sqrt{3}} & \frac{1}{\sqrt{3}}                 & \frac{1}{\sqrt{3}}
+   \end{pmatrix}
+   \approx
+   \begin{pmatrix}
+      0.577 & -0.789 & 0.211  \\
+      0.577 & 0.211  & -0.789 \\
+      0.577 & 0.577  & 0.577
+   \end{pmatrix}
+   \label{eqn:matrix-c-used}
+\end{align}
+
+\subsubsection{NIR Colorization}
+
+We discover that this method of colorization near-infrared images does generate good results, but is too limited in the intensity:
+By fixing the intensity to the near-infrared image's one, we ignore the different wave lengths and reflectance properties of the near-infrared light and visible light.
+We observe intensities are different in large areas rather than in the details \autoref{sec:nir-as-intensity-approximation-evaluation}.
+This corresponds to low-frequencies of the intensity which are different while high-frequencies stay the same.
+This property was also already used in the related research field of NIR-RGB image fusion \parencite{study-vis-nir-fusion},
+and we use this as an inspiration for generating color.
+
+To leverage this observation, we base our approach on the sampling algorithm \ref{alg:sampling-gray-scale-colorization}.
+However instead of simply using the intensity of the NIR image $\y_{t-1}^I$, we only use the high frequencies of the NIR's intensity $\y_{t-1}^{I_H}$
+and combine them with the low-frequencies of the sample's intensity $\tilde{\x}_{t-1}^{I_L}$.
+In \autoref{alg:sampling-nir-colorization} we demonstrate our general algorithm.
+
 \begin{algorithm}[htp!]
-   \caption{NIR-Colorization Sampling}
-   \label{alg:sampling-unconditional}
+   \caption{General NIR-Colorization Sampling}
+   \label{alg:sampling-nir-colorization}
    \begin{algorithmic}
-      \Require Reference gray-scale image $\y_0$
+      \Require Reference NIR image $\y_0$
       \State $\x_T \sim \mathcal{N}(0, \mathbf{I})$
       \For{$t = T, \dots, 1$}
-         \State $\y_{t-1} \sim q(\y_{t-1}| \y_0)$
-         \State $\x_{t-1} \sim p_\theta(\x_{t-1}|\x_t)$
-         \State $\y_{t-1}^i, \y_{t-1}^r = $\ \Call{decouple\_color}{$\y_{t-1}$}
-         \State $\x_{t-1}^i, \x_{t-1}^r = $\ \Call{decouple\_color}{$\x_{t-1}$}
-         \State $\x_{t-1}^{i,l}, \x_{t-1}^{i,h} =$\ \Call{decompose\_frequencies}{$\x_{t-1}^i$} 
-         \State $\y_{t-1}^{i,l}, \y_{t-1}^{i,h} =$\ \Call{decompose\_frequencies}{$\y_{t-1}^i$} 
-         \State $\x_{t-1}=$ \ \Call{Couple}{$\y_{t-1}^i$,$\x_{t-1}^r$}
+      \State $\y_{t-1} \sim q(\y_{t-1}| \y_0)$
+      \State $\tilde{\x}_{t-1} \sim p_\theta(\x_{t-1}|\x_t)$
+      \State $\y_{t-1}^I, \y_{t-1}^R = $\ \Call{DecoupleIntensity}{$\y_{t-1}$}
+      \State $\tilde{\x}_{t-1}^I, \tilde{\x}_{t-1}^R=$\ \Call{DecoupleIntensity}{$\tilde{\x}_{t-1}$}
+      \State $\tilde{\x}_{t-1}^{I_L}, \tilde{\x}_{t-1}^{I_H} =$\ \Call{DecomposeFrequencies}{$\tilde{\x}_{t-1}^I$}
+      \State $\y_{t-1}^{I_L}, \y_{t-1}^{I_H} =$\ \Call{DecomposeFrequencies}{$\y_{t-1}^I$}
+      \State $\x_{t-1}^I =$\ \Call{ComposeFrequencies}{$\tilde{\x}_{t-1}^{I_L}$, $\y_{t-1}^{I_H}$}
+      \State $\x_{t-1}=$ \ \Call{CoupleIntensity}{$\x_{t-1}^I$,$\tilde{\x}_{t-1}^R$}
       \EndFor
       \Return $\x_0$
    \end{algorithmic}
 \end{algorithm}
 
-Similar to \cite{ilvr} or \cite{repaint} we decide to refine the latent variable in each sampling iteration.
+Again for the choice of the frequency decomposition and composition \textproc{DecomposeFrequencies} and \textproc{ComposeFrequencies}
+many methods are viable.
+E.g., the use of Fourier transformations, wavelet decomposition or other filter based-methods used in NIR-RGB fusion \parencite{study-vis-nir-fusion} may be all suitable.
+We decided for a simple Gaussian filter $G \in \mathbb{R}^{k \times k}$ (\autoref{eqn:gaussian-filter}) to obtain the low-frequencies \parencite{computer-vision-a-modern-approach} and get the high-frequencies by subtracting the low-frequencies from the image.
+
+\begin{equation}
+   \label{eqn:gaussian-filter}
+   \begin{aligned}
+      G_{\sigma}(u,v) = \frac{1}{2 \pi \sigma^2} \exp\left(-\frac{(u^2+ v^2)}{2\sigma^2}\right) \\
+   \end{aligned}
+\end{equation}
+
+The concrete implementation for our sampling procedure is demonstrated in \autoref{alg:sampling-nir-colorization-concrete}.
+We evaluate this method in comparison to the sampling using just the intensity in \autoref{sec:high-pass-filter-evaluation}.
+We further investigate the influence of the hyperparameter $\sigma$ of the Gaussian filter in \autoref{sec:influence-of-sigma-evaluation}
+and finally compare it with CycleGAN in \autoref{sec:diffusion-vs-cyclegan}.
+
+\begin{algorithm}[htp!]
+   \caption{Concrete NIR-Colorization Sampling}
+   \label{alg:sampling-nir-colorization-concrete}
+   \begin{algorithmic}
+      \Require Reference NIR image $\y_0$
+      \State $\x_T \sim \mathcal{N}(0, \mathbf{I})$
+      \For{$t = T, \dots, 1$}
+      \State $\epsilon \sim \mathcal{N}(0, \mathbf{I})$ \algorithmicif\ $t > 0$, \algorithmicelse\ $\epsilon = 0$
+      \State $\y_{t-1} = \sqrt{\bar{\alpha}_t}\y_{0} + \sqrt{1 - \bar{\alpha}_t} \epsilon$
+      \State $\mathbf{z} \sim \mathcal{N}(0, \mathbf{I})$ \algorithmicif\ $t > 0$, \algorithmicelse\ $\mathbf{z} = 0$
+      \State $\tilde{\x}_{t-1} = \frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_\theta(\x_t, t) \right) + \sigma_t \mathbf{z}$
+      \State $\begin{pmatrix}\y_{t-1}^I & \y_{t-1}^{R_1} & \y_{t-1}^{R_2}\end{pmatrix} = \y_{t-1} \cdot C$
+      \State $\begin{pmatrix}\tilde{\x}_{t-1}^I & \tilde{\x}_{t-1}^{R_1} & \tilde{\x}_{t-1}^{R_2}\end{pmatrix} = \tilde{\x}_{t-1} \cdot C$
+      \State $\tilde{\x}_{t-1}^{I_L} = \tilde{\x}_{t-1}^I * G_\sigma$
+      \State $\tilde{\x}_{t-1}^{I_H} = \tilde{\x}_{t-1}^I - \tilde{\x}_{t-1}^{I_L}$
+      \State $\y_{t-1}^{I_L} = \y_{t-1}^{I} * G_\sigma$
+      \State $\y_{t-1}^{I_H} = \y_{t-1}^{I} - \y_{t-1}^{I_L}$
+      \State $\x_{t-1}^I = \tilde{\x}_{t-1}^{I_L} + \y_{t-1}^{I_H}$
+      \State $\x_{t-1} = \begin{pmatrix}\x_{t-1}^I & \tilde{\x}_{t-1}^{R_1} & \tilde{\x}_{t-1}^{R_2} \end{pmatrix} \cdot C^T$
+      \EndFor
+      \Return $\x_0$
+   \end{algorithmic}
+\end{algorithm}
+
+\todo{Connection to \autoref{sec:conditional-sampling}}
+
+\subsection{Energy-Guided Conditional Sampling}
+\label{sec:energy-guided-sampling}
+Based on the derivation in \autoref{sec:conditional-sampling}, \textcite{egsde} propose to guide the sampling using an energy-function.
+Given an input image $\y_0$, we define $p_\theta(\y_0|\x_t)$ as \autoref{eqn:enery-definition}.
+
+\begin{equation}
+   \label{eqn:enery-definition}
+   p_\theta(\y_0|\x_t) = \exp(\mathcal{E}(\x_t, \y_0, t))
+\end{equation}
+
+To guide the image generation using the diffusion network the energy function must be designed. 
+
+As further discussed in \autoref{sec:correction-guided-sampling}, 
+we could now model the energy function either by comparing the intensities (\autoref{eqn:energy-intensities}) or by comparing the high frequencies of the intensities (\autoref{eqn:energy-high-freq-intensities}).
+Here, the $\x^I_t$ and $\y^I_t$ denote the intensities of the sample image $\x_t$ and a noised NIR image $\y_t$ while $\x^{I_H}_t$ and $\y^{I_H}_t$  denote the high frequencies of the intensities respectively. 
+
+\begin{align}
+   \mathcal{E}_I(\x_t, \y_0, t) &= \mathbb{E}_{\y_t \sim p(\y_t | \y_0)}\left[|| \x^I_t - \y^I_t ||^2\right] \label{eqn:energy-intensities}\\
+   \mathcal{E}_{I_H}(\x_t, \y_0, t) &= \mathbb{E}_{\y_t \sim p(\y_t | \y_0)}\left[|| \x^{I_H}_t - \y^{I_H}_t ||^2\right] \label{eqn:energy-high-freq-intensities}
+\end{align}
 

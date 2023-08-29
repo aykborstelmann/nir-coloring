@@ -1,4 +1,4 @@
-\chapter{Evaluations}
+\chapter{Evaluation and Discussion}
 
 \section{Evaluation Metrics}
 
@@ -38,7 +38,7 @@ The second category refers to the \textit{content preservation} of the input ima
 \section{Loss-Guided and Correction-Guided Sampling}
 Current approaches for unpaired image translation mostly suggest training an unconditional model on the target domain
 and condition on the input images while sampling.
-We find that methods for conditioning on an input image can be grouped into \textit{loss-guided} (\autoref{sec:loss-guided-sampling}) and \textit{correction-guided} (\autoref{sec:correction-guided-sampling}) sampling.
+We find that methods for conditioning on an input image can be grouped into \textit{loss-guided} (\autoref{sec:energy-guided-sampling}) and \textit{correction-guided} (\autoref{sec:correction-guided-sampling}) sampling.
 
 Generally when using the correction-guided approach, the current sampled image has to be decomposed into multiple parts,
 one part being the one to be modified and the second one being the remainder.
@@ -49,7 +49,7 @@ Formulation as a loss is often easier to obtain and sometimes to only possibilit
 In the case of near-infrared colorization both methods are actionable.
 We evaluate for the context of near-infrared colorization which method should be used.
 For both cases we condition using near-infrared images by assuming the intensity of the sample should be equal to the near-infrared image.
-We discuss this particular conditioning method separately in \autoref{sec:conditioning-the-near-infrared}.
+We discuss this particular conditioning method separately in \autoref{sec:nir-as-intensity-approximation-evaluation}.
 In \autoref{fig:qualitative-evaluation-loss-guided-vs-correction-guided} we demonstrate the difference when formulating exactly the same property as loss-guided sampling and as correction-guided sampling.
 It can be observed that the contours appear generally more noisy in the loss-guided sampling.
 This observation is also quantitatively reflected, the FID of the loss-guided sampling is $23.64$ points higher than of the correction-guided approach (\autoref{fig:quantitative-evaluation-loss-guided-vs-correction-guided}).
@@ -64,7 +64,7 @@ This observation is also quantitatively reflected, the FID of the loss-guided sa
         \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/nir_S2_B06_R3_PICT3848.jpg} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-correction-guided_S2_B06_R3_PICT3848.png} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-loss-guided_S2_B06_R3_PICT3848.png} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/nir_S2_B07_R1_PICT3274.jpg} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-correction-guided_S2_B07_R1_PICT3274.png} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-loss-guided_S2_B07_R1_PICT3274.png}
     \end{tabularx}
     \caption{
-        TODO
+        \todo{Add Caption}
     }
     \label{fig:qualitative-evaluation-loss-guided-vs-correction-guided}
 \end{figure}
@@ -78,17 +78,17 @@ This observation is also quantitatively reflected, the FID of the loss-guided sa
         Loss-Guided       & 128.64
     \end{tabular}
     \caption{
-        \textbf{Quantitative Evaluation.} TODO
+        \todo{Add Caption}
     }
     \label{fig:quantitative-evaluation-loss-guided-vs-correction-guided}
 \end{table}
 
-
-TODO Provide intuition for this observation !
+\todo{Provide intuition for this observation !}
+\todo{Unify with observations of \autoref{sec:high-pass-filter-evaluation}}
 
 \section{Conditioning the Near-Infrared}
 \subsection{NIR as Intensity Approximation}
-\label{sec:conditioning-the-near-infrared}
+\label{sec:nir-as-intensity-approximation-evaluation}
 \Textcite{sbgm} already suggested colorization methods using diffusion models.
 Although in comparison visible light, near-infrared light has different reflection properties,
 we could ignore this property and assume the NIR intensity to be a good approximation of the visual light's intensity.
@@ -109,7 +109,8 @@ we could ignore this property and assume the NIR intensity to be a good approxim
     \label{fig:qualitative-evaluation-conditional-sampling}
 \end{figure}
 
-% TODO Explanation why this approximation works: Night, only one light source, not to strong, so trees are not visible ...
+\todo{Explanation why approximation even works, night, few vegetation, ...}
+
 Qualitatively we can also observe those generated images are faithful to the input image (\autoref{fig:qualitative-evaluation-conditional-sampling}).
 It is to be mentioned that faithfulness to the input image is not a quality learned by the network, but a design choice of the sampling procedure.
 Additionally, colors estimated by the diffusion model appear reasonable.
@@ -147,9 +148,9 @@ We compare this with the near-infrared intensity in \autoref{fig:heatmap-cycle-g
 
 \begin{figure}[htp!]
     \centering
-    % TODO Better integration (using pdf or so); Best: Direct latex code 
     \includegraphics[width=\textwidth]{gfx/heatmap-nir-cycle-gan-intensity-diff.png}
     \caption{
+        \todo{Better integration (using pdf or so); Best: Direct latex code}
         Absolute difference between CycleGAN's intensity and the NIR image.
         Left to Right: Intensity calculated by images generated by CycleGAN, Near-Infared image \parencite{serengeti} and difference between both.
     }
@@ -178,9 +179,7 @@ To investigate this, in \autoref{fig:qualitative-evaluation-cyclegan-conditional
         \includegraphics{gfx/conditional-with-cycle-gan-qual/nir_S2_B06_R3_PICT3848.jpg} & \includegraphics{gfx/conditional-with-cycle-gan-qual/cyclegan_S2_B06_R3_PICT3848_fake.png} & \includegraphics{gfx/conditional-with-cycle-gan-qual/diff_cycle_gan_S2_B06_R3_PICT3848_fake.png} & \includegraphics{gfx/conditional-with-cycle-gan-qual/nir_S2_B07_R1_PICT3274.jpg} & \includegraphics{gfx/conditional-with-cycle-gan-qual/cyclegan_S2_B07_R1_PICT3274_fake.png} & \includegraphics{gfx/conditional-with-cycle-gan-qual/diff_cycle_gan_S2_B07_R1_PICT3274_fake.png}
     \end{tabularx}
     \caption{
-        % TODO
-        Absolute difference between CycleGAN's intensity and the NIR image.
-        Left to Right: Intensity calculated by images generated by CycleGAN, Near-Infared image \parencite{serengeti} and difference between both.
+        \todo{Add caption}
     }
     \label{fig:qualitative-evaluation-cyclegan-conditional-sampling}
 \end{figure}
@@ -195,9 +194,7 @@ To investigate this, in \autoref{fig:qualitative-evaluation-cyclegan-conditional
         Diffusion with NIR Inputs                & 104.04
     \end{tabular}
     \caption{
-        % TODO
-        \textbf{Quantitative Evaluation.} CycleGAN and the diffusion model trained on Snapshot Serengeti \parencite{serengeti} containing only night NIR and RGB images.
-        Comparing the FID calculated between the test dataset and the generated images.
+        \todo{Add caption}   
     }
     \label{fig:quantitative-evaluation-cyclegan-conditional-sampling}
 \end{table}
@@ -215,6 +212,7 @@ Therefore, we have shown that the assumption that the near-infrared intensities 
 is the main factor explaining the difference between the quantitative results.
 
 \subsection{High-Pass Filtering of NIR}
+\label{sec:high-pass-filter-evaluation}
 
 To improve this, we can get inspired by simple NIR-RGB enhancement methods based on filters \parencite{rgb-nir-image-enhancement}.
 A better approximation is to use only the high-frequencies of the near-infrared image while the low frequencies can still be sampled by the diffusion model.
@@ -232,7 +230,7 @@ In \autoref{fig:qualitative-evaluation-full-high-pass} we evaluate the results o
         \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/nir_S2_B06_R3_PICT3848.jpg} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/full-pass_S2_B06_R3_PICT3848.png} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/high-pass_S2_B06_R3_PICT3848.png} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/nir_S2_B07_R1_PICT3274.jpg} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/full-pass_S2_B07_R1_PICT3274.png} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/high-pass_S2_B07_R1_PICT3274.png}
     \end{tabularx}
     \caption{
-        \textbf{Qualitative Evaluation.} TODO
+        \todo{Add caption}
     }
     \label{fig:qualitative-evaluation-full-high-pass}
 \end{figure}
@@ -247,7 +245,7 @@ In \autoref{fig:qualitative-evaluation-full-high-pass} we evaluate the results o
         Unconditional & 96.02
     \end{tabular}
     \caption{
-        \textbf{Quantitative Evaluation.} TODO
+        \todo{Add caption}
     }
     \label{fig:quantitative-evaluation-full-high-pass}
 \end{table}
@@ -258,14 +256,15 @@ For example, we observe for the first image of the fix that now, not only the fo
 This is quite typical for the target domain, that is why the diffusion model generates such images. 
 This reduction in restriction also positively influences the quantitative measurements: 
 This method achieves a FID of $95.49$ which is even $0.53$ FID points better than the unconditional sampling (\autoref{fig:quantitative-evaluation-full-high-pass}).
-% TODO resolve conflict to statement: "unconditional sampling is always the best" 
+\todo{Resolve conflict to statement: "unconditional sampling is always the best" }
 
 \subsection{Influence of Hyperparameter Sigma}
-
+\label{sec:influence-of-sigma-evaluation}
 
 
 
 \section{Diffusion and GAN}
+\label{sec:diffusion-vs-cyclegan}
 To study the difference between diffusion models and generative adversarial networks for near-infrared image colorization, we compare them for two specialized problems.
 
 First we evaluate the performances on the Caltech Camera Traps dataset (\autoref{sec:cct}) by \Citeauthor*{caltech}.
@@ -281,6 +280,8 @@ this specialized problem as easier, which is also visible in the quality of the 
 
 \subsection{Extended Dataset --- Robustness}
 \label{sec:diffusion-vs-cyclegan-day}
+\todo{Redo with new sampling method}
+
 Using the Caltech Camera Traps data split we introduced in \autoref{sec:cct},
 we train an unconditional diffusion model on the mostly colored daytime images from the training dataset.
 
@@ -300,14 +301,13 @@ Compared with other FIDs in this work we consider it a good value.
         \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_5860ef9d-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00006.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_58629181-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00007.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_58629415-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00008.png}
     \end{tabularx}
     \caption{
-        %TODO
-        Left to Right Continuing: Sample image from the test caltech datatset \parencite{caltech} and sample generated by the unconditional diffusion model.
+        \todo{Add caption}
     }
     \label{fig:qualitative-evaluation-unconditional-sampling-caltech}
 \end{figure}
 
 Next our CycleGAN network is trained with images from both domains to learn a function while maintaining a cycle-consistency property according to \autoref{sec:methods-cycle-gan}.
-We sample using our sampling procedure with the diffusion model given the near-infrared images of the test dataset (TODO) and simultaneously
+We sample using our sampling procedure with the diffusion model given the near-infrared images of the test dataset (\todo{}) and simultaneously
 sample using CycleGAN.
 
 \begin{figure}[htp!]
@@ -320,7 +320,7 @@ sample using CycleGAN.
         \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/nir_5860ede3-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/cyclegan_5860ede3-23d2-11e8-a6a3-ec086b02610b_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/diffusion_5860ede3-23d2-11e8-a6a3-ec086b02610b.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/nir_586437e6-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/cyclegan_586437e6-23d2-11e8-a6a3-ec086b02610b_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/diffusion_586437e6-23d2-11e8-a6a3-ec086b02610b.png}
     \end{tabularx}
     \caption{
-        TODO
+        \todo{Add caption}
     }
     \label{fig:qualitative-evaluation-conditional-sampling-caltech}
 \end{figure}
@@ -334,7 +334,7 @@ sample using CycleGAN.
         Unconditional Diffusion & 153.63
     \end{tabular}
     \caption{
-        \textbf{Quantitative Evaluation.} TODO
+        \todo{Add caption}
     }
     \label{fig:quantitative-evaluation-conditional-sampling-caltech}
 \end{table}
@@ -383,7 +383,7 @@ First we evaluate the unconditional sampling of the diffusion model and therefor
 
 \begin{figure}[htp!]
     \centering
-    % TODO choose more animal images
+    \todo{Better choice of images}
     \setkeys{Gin}{width=1\linewidth}
     \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
         RGB                                                                                    & CycleGAN                                                                                         & Diffusion                                                                                    & RGB                                                                                    & CycleGAN                                                                                         & Diffusion                                                                                    \\
