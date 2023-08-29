@@ -23,16 +23,16 @@ Current best approaches leverage \textit{Generative Adversarial Networks} (GANs)
 \Citeauthor{mehri} introduced one of such \parencite{mehri}.
 But GANs are known for their unstable training manifesting in of mode collapse and hallucinations.
 
-Recently advances in \textit{diffusion models} showed superiority of such in comparison to GANs in various other image translation tasks.
+Recently advances in \textit{denoising diffusion probabilistic models} (short: \textit{diffusion models} or DDPM) \parencite{ddpm} showed superiority of such in comparison to GANs in various other image translation tasks \parencite{diffusion-beats-gans,sbgm}.
 In contrary to GANs their training is more stable while simultaneously a higher sample diversity is observed.
 This suggests that diffusion models could also influence NIR colorization positively.
 
 To our best knowledge, we are the first to design a system for NIR colorization based on diffusion models.
 Our diffusion model merely needs to be trained on colored images and only the sampling procedure is adapted for NIR colorization.
-We compare our system with \Citeauthor*{mehri}'s GAN and show that our system outperforms it in terms of FID.
+We compare our system with \textcite{mehri}'s GAN and show that our system outperforms it in terms of the state of the art metric FID \parencite{ttur}.
 Intuition for the design of our system is given based on our analysis of gray-scale colorization techniques.
 Additionally, we investigate the difference of correction-based- and loss-based sampling in our application
-context and show correction-based sampling's superiority.
+context.
 Furthermore, requirements for the training datasets are found that significantly affect the learning success.
 
 \section{Related Work}

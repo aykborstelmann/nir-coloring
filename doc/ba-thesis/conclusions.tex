@@ -12,6 +12,21 @@ are examined, and we empirically show the superiority of the latter in our appli
 Last but not least we show the importance of the dividing the training dataset into near-infrared night images and RGB incandescent images
 and provide tooling this task on the Serengeti dataset \parencite{serengeti}.
 
+\todo{Further discuss last point in discussion / evaluation}
+
 
 \section{Future Work} 
 \label{sec:future-work}
+
+\todo{Maybe move future work to end of \autoref{chap:evaluation-and-discussion}}
+
+\begin{itemize}
+    \item Invest more computational resources $\Rightarrow$ larger dataset, larger model 
+    \item Sampling \& Training Speed
+    \item Higher Resolutions
+    \item More complex conditioning methods, e.g., inspired by \textcite{study-vis-nir-fusion}
+    \item Better evaluation -- Calculate FID between Day \& Night separately
+    \item Examine the content preservation $\rightarrow$ classifier accuracy ?  
+    \item Investigate deterministic samplers such as ODESolver \parencite{sbgm} and DDIM \parencite{ddim}
+    \item CycleGAN with High-Pass loss to keep content
+\end{itemize}

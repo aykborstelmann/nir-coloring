@@ -40,12 +40,12 @@ The requirements for this subset strongly influence the training performance of 
 
 The \ref{item:requirement-animal-filter}., \ref{item:requirement-weighted-sampling}. and \ref{item:requirement-night}. requirements are all achievable by using the information provided in the COCO format, and therefore,
 are already obtainable before downloading a single image.
-Only choosing images with animals (\ref{item:requirement-animal-filter}.) is done by a simple filter on the data source before sampling.
-The approximately uniform distribution of locations (\ref{item:requirement-weighted-sampling}.) can be archived using a weighted sampling with the inverse of location occurrences as weight.
-Filtering for only night images (\ref{item:requirement-night}.) can also be achieved only using metadata:
+Only choosing images with animals \ref{item:requirement-animal-filter} is done by a simple filter on the data source before sampling.
+The approximately uniform distribution of locations \ref{item:requirement-weighted-sampling} can be archived using a weighted sampling with the inverse of location occurrences as weight.
+Filtering for only night images \ref{item:requirement-night} can also be achieved only using metadata:
 The COCO format documents the time of recording. Using time zones and geolocations, individual time frames for each day of the year can serve as filters for night images.
 
-Since the COCO format does not provide information about which item is a NIR- and which item is an RGB image (\ref{item:requirement-split}.) \parencite{caltech}, that information is not available before downloading.
+Since the COCO format does not provide information about which item is a NIR- and which item is an RGB image \ref{item:requirement-split} \parencite{caltech}, that information is not available before downloading.
 Because both data sources provide their NIR images with \textit{colored} logos, they are stored in an RGB image where the actual image section has equal values over all three channels.
 Therefore, a pragmatic solution is to download the images and compare the three channels in a cropped version of the image (without the logo section).
 
@@ -76,10 +76,6 @@ GANs in general are not restricted in training to map the actual \textbf{content
 $\x \in X$ to the image produced $G(\x) \in Y$.
 For example, one could imagine that the mapping function which maps all $\x$ to some real $\y \in Y$ ($G(\x) = \y$) should perform exceptionally well in terms of its training loss, since the produced image should always be classified as "real".
 This case is called \textit{mode collapse} and can be weakened by adding additional structure to the training.
-
-In the following, we will concentrate on two options:
-1. Using a \textit{cycle consistency loss} which was introduced by \citeauthor*{cyclegan-original} for the network \textit{CycleGAN} \parencite{cyclegan-original}
-and 2. using a \textit{contrastive loss} that \citeauthor*{cut} introduced into this environment for the network \textit{CUT} \parencite{cut}.
 
 \subsection{CycleGAN}
 \label{sec:methods-cycle-gan}
@@ -214,8 +210,13 @@ Therefore, \citeauthor*{mehri} propose to decrease the weight of the cycle consi
 
 \section{Diffusion Models}
 Denoising Diffusion Probabilistic Models as introduced by \cite{ddpm} are generative networks recently advancing.
+We provide a detailed theoretical background for this architecture in \autoref{sec:diffusion-prerequisites}. 
+Further we answer theoretically how one can use unconditional diffusion to sample given a condition in \autoref{sec:conditional-sampling}.
+Our approach for grayscale-colorization and near-infrared colorization is presented in \autoref{sec:correction-guided-sampling} while 
+we introduce at first sight simpler formulation using what we call \textit{energy-guided conditional sampling} in \autoref{sec:energy-guided-sampling}.
 
 \subsection{Prerequisites}
+\label{sec:diffusion-prerequisites}
 Our diffusion process consists of $T$ timesteps.
 $\x_0$ is the original image and $\x_T$ is the final noised image following an isotropic Gaussian distribution.
 
@@ -259,7 +260,7 @@ is nearly an isotropic Gaussian, therefore $\x_T \sim \mathcal{N}(0, \mathbf{I})
 Then we gradually \textit{denoise} our sample using $q(\x_{t-1}|\x_t)$ until $t = 0$.
 Because $q(\x_{t-1}|\x_t)$ is not trivial obtainable without knowing the data distribution,
 we leverage a neural network $p_\theta$ to approximate it.
-Where $\theta$ denote the parameters of the network.
+$\theta$ denote the parameters of the network.
 If $\beta_t$ is small enough it will also be Gaussian (\autoref{eqn:reverse-process}) \parencite{ddpm}.
 
 \begin{equation}
@@ -271,7 +272,7 @@ If $\beta_t$ is small enough it will also be Gaussian (\autoref{eqn:reverse-proc
 \end{equation}
 
 To train the neural network, one wants to minimize the log-likelihood $-\log p_\theta(\x_0)$.
-As this is difficult to train, a variational lower bound using the Kullback-Leibler divergence can be leveraged (\autoref{eqn:loss-vlb}).
+As this is difficult to train, a variational lower bound using the Kullback-Leibler divergence can be leveraged (\autoref{eqn:loss-vlb}) \parencite{ddpm}.
 
 \begin{equation}
    \label{eqn:loss-vlb}
@@ -286,11 +287,10 @@ As this is difficult to train, a variational lower bound using the Kullback-Leib
    \end{aligned}
 \end{equation}
 
-We minimize our objective while minimizing the additive terms $L_T$, $L_{t-1}$ for all $t \in [2:T]$ and $L_0$.
+We minimize our objective by minimizing the additive terms $L_T$, $L_{t-1}$ for all $t \in [2:T]$ and $L_0$.
 As $L_T$ is constant this can be ignored during training.
 Because every $D_{KL}$ term compares two Gaussian distributions, they can be computed in closed form.
-
-The term $L_{t-1}$ can be rewritten as the following (\autoref{eqn:loss-t-1}) where $C$ is a constant independent of $\theta$ and can therefore be ignored while minimizing.
+We can rewritte the term $L_{t-1}$ as \autoref{eqn:loss-t-1} where $C$ is a constant independent of $\theta$ and can therefore be ignored while minimizing.
 
 \begin{equation}
    \label{eqn:loss-t-1}
@@ -303,23 +303,23 @@ This equation can be further expanded by utilizing \autoref{eqn:forward-process-
    L_{t-1} - C =\mathbb{E}_q\left[\frac{1}{2||\Sigma_\theta(\x_t,t)||_2^2}|| \frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_t \right) - \mu_\theta(\x_t,t)||^2\right]
 \end{equation}
 
-Because this reveals, that $\mu_\theta$ must predict $\frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_t \right)$ given $\x_t$ to minimize the loss,
-\cite{ddpm} choose to parameterize $\mu_\theta(\x_t, t)$ as follows, where $\epsilon_\theta$ is a function to predict $\epsilon$ given $\x_t$.
+Because this reveals that $\mu_\theta$ must predict $\frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_t \right)$ given $\x_t$ to minimize the loss,
+\textcite{ddpm} choose to parameterize $\mu_\theta(\x_t, t)$ as follows, where $\epsilon_\theta$ is a function to predict $\epsilon$ given $\x_t$ (\autoref{eqn:mu-theta-parameterization}).
 
 \begin{equation}
    \label{eqn:mu-theta-parameterization}
    \mu_\theta(\x_t, t) = \frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_t \right)
 \end{equation}
 
-With parameterization \autoref{eqn:mu-and-beta}, the loss can be simplified as \autoref{eqn:epsilon-parameterized-loss}, as proposed by \cite{ddpm}.
+With parameterization \autoref{eqn:mu-and-beta}, the loss can be simplified as \autoref{eqn:epsilon-parameterized-loss}, as proposed by \textcite{ddpm}.
 
 \begin{equation}
    \label{eqn:epsilon-parameterized-loss}
    \mathbb{E}_{\x_0, \epsilon}\left[ \frac{\beta_t^2}{2 ||\Sigma_\theta(\x_t,t)||_2^2 \alpha_t(1-\bar{\alpha}_t)} || \epsilon - \epsilon_\theta(\sqrt{\bar{\alpha}_t}\x_0 + \sqrt{1 - \bar{\alpha}_t} \epsilon,t) ||^2 \right]
 \end{equation}
 
-Furthermore, \cite{ddpm} found out that when not learning $\Sigma_\theta$, and fixing it by the beta-schedule, the loss \autoref{eqn:simple-loss} is even better for sample quality and is easier to implement.
-To be precise \cite{ddpm} fix $\Sigma_\theta(\x_t, t) = \sigma_t^2\mathbf{I}$ with either $\sigma_t^2 = \beta_t$ or $\sigma_t^2 = \tilde{\beta}_t$.
+Furthermore, \textcite{ddpm} found, that when not learning $\Sigma_\theta$, and fixing it by the beta-schedule, the loss \autoref{eqn:simple-loss} is even better for sample quality and is easier to implement.
+To be precise \textcite{ddpm} fix $\Sigma_\theta(\x_t, t) = \sigma_t^2\mathbf{I}$ with either $\sigma_t^2 = \beta_t$ or $\sigma_t^2 = \tilde{\beta}_t$.
 
 \begin{equation}
    \label{eqn:simple-loss}
@@ -359,6 +359,8 @@ and the parameterization of the mean given an $\epsilon$ predicted by the model 
       \Return $\x_0$
    \end{algorithmic}
 \end{algorithm}
+
+\todo{Visualize Sampling Procedure}
 
 \todo{Section with implementation, such as U-Net for $\epsilon$ prediction, ...}
 
@@ -429,9 +431,10 @@ It is only needed to calculate or approximate the score-function $\nabla_{\x_t} 
 \label{sec:correction-guided-sampling}
 
 \subsubsection{Gray-Scale Colorization}
+\label{sec:correction-guided-sampling-gray-scale-colorization}
 
-Colorization can also be considered as specialized form of \textit{image inpainting} as \textcite{sbgm} showed.
-Image inpainting is the task of restoring lost parts of an image congruent with the known areas of the image.
+Colorization can also be considered as specialized form of \textit{image imputation} as \textcite{sbgm} showed.
+Image imputation is the task of restoring lost parts of an image congruent with the known areas of the image.
 In the case of grayscale-colorization the known part is the \textit{intensity} while unknown are the remaining dimensions for a colored image, e.g. \textit{hue} and \textit{saturation}.
 Therefore, we first sample in each iteration $t-1$ a $\tilde{\x}_{t-1}$ from the diffusion model given $\x_t$ using $p_\theta(\tilde{\x}_{t-1}|\x_t)$.
 Simultaneously, we diffuse our input image $\y_0$ to the timestep $t-1$ using $q(\y_{t-1}, \y_0)$.
@@ -456,13 +459,15 @@ We implement this colorization approach according to \autoref{alg:sampling-gray-
    \end{algorithmic}
 \end{algorithm}
 
+\todo{Visualize Process in Iteration}
+
 We call this method \textit{correction-guided} sampling since we guide the sampling process by \textit{correcting} the sample in each iteration.
 
 \textproc{DecoupleIntensity} and \textproc{CoupleIntensity} can theoretically be any invertible transformation where the intensity is decoupled from the color information.
 Intuitive options would be color spaces such as HSI, HSV, LAB, YCbCr, \dots,
 but we found empirically that transforming the RGB image using an orthogonal matrix where the resulting space's first dimension is the intensity to give best results:
 
-We search for a matrix $C \in \mathbb{R}^{3\times3}$ such that for any RGB pixel $p = \begin{pmatrix}r & g &b\end{pmatrix} \in \mathbb{R}^3$ and a fixed scalar $a \in \mathbb{R}$ the requirements of \autoref{eqn:requirements-c} are fulfilled.
+Therefore, we search for a matrix $C \in \mathbb{R}^{3\times3}$ such that for any RGB pixel $p = \begin{pmatrix}r & g &b\end{pmatrix} \in \mathbb{R}^3$ and a fixed scalar $a \in \mathbb{R}$ the requirements of \autoref{eqn:requirements-c} are fulfilled.
 \begin{equation}
    \label{eqn:requirements-c}
    \begin{aligned}
@@ -471,7 +476,7 @@ We search for a matrix $C \in \mathbb{R}^{3\times3}$ such that for any RGB pixel
    \end{aligned}
 \end{equation}
 
-This can be obtained by a system of equations or QR decomposition. \todo{Check QR-decomposition statement}
+This can be obtained by a system of equations or QR decomposition. \todo{Check QR-decomposition statement.}
 We derive the matrix $C$ as \autoref{eqn:matrix-c-used}, while \autoref{eqn:matrix-c-ref} is a different solution to the requirements as \textcite{sbgm} obtained it.
 
 \begin{align}
@@ -504,15 +509,16 @@ We derive the matrix $C$ as \autoref{eqn:matrix-c-used}, while \autoref{eqn:matr
 \end{align}
 
 \subsubsection{NIR Colorization}
+\label{sec:correction-guided-sampling-nir-colorization}
 
 We discover that this method of colorization near-infrared images does generate good results, but is too limited in the intensity:
 By fixing the intensity to the near-infrared image's one, we ignore the different wave lengths and reflectance properties of the near-infrared light and visible light.
-We observe intensities are different in large areas rather than in the details \autoref{sec:nir-as-intensity-approximation-evaluation}.
-This corresponds to low-frequencies of the intensity which are different while high-frequencies stay the same.
+We observe intensities differences lie in the large areas rather than in the details \autoref{sec:nir-as-intensity-approximation-evaluation}.
+This corresponds to difference in low-frequencies of the intensity while high-frequencies of the intensity are quite similar.
 This property was also already used in the related research field of NIR-RGB image fusion \parencite{study-vis-nir-fusion},
 and we use this as an inspiration for generating color.
 
-To leverage this observation, we base our approach on the sampling algorithm \ref{alg:sampling-gray-scale-colorization}.
+To leverage this observation, we base our approach on \autoref{alg:sampling-gray-scale-colorization}.
 However instead of simply using the intensity of the NIR image $\y_{t-1}^I$, we only use the high frequencies of the NIR's intensity $\y_{t-1}^{I_H}$
 and combine them with the low-frequencies of the sample's intensity $\tilde{\x}_{t-1}^{I_L}$.
 In \autoref{alg:sampling-nir-colorization} we demonstrate our general algorithm.
@@ -537,8 +543,10 @@ In \autoref{alg:sampling-nir-colorization} we demonstrate our general algorithm.
    \end{algorithmic}
 \end{algorithm}
 
+\todo{Visualize Process in Iteration}
+
 Again for the choice of the frequency decomposition and composition \textproc{DecomposeFrequencies} and \textproc{ComposeFrequencies}
-many methods are viable.
+many implementation are viable.
 E.g., the use of Fourier transformations, wavelet decomposition or other filter based-methods used in NIR-RGB fusion \parencite{study-vis-nir-fusion} may be all suitable.
 We decided for a simple Gaussian filter $G \in \mathbb{R}^{k \times k}$ (\autoref{eqn:gaussian-filter}) to obtain the low-frequencies \parencite{computer-vision-a-modern-approach} and get the high-frequencies by subtracting the low-frequencies from the image.
 
@@ -601,3 +609,7 @@ Here, the $\x^I_t$ and $\y^I_t$ denote the intensities of the sample image $\x_t
    \mathcal{E}_{I_H}(\x_t, \y_0, t) &= \mathbb{E}_{\y_t \sim p(\y_t | \y_0)}\left[|| \x^{I_H}_t - \y^{I_H}_t ||^2\right] \label{eqn:energy-high-freq-intensities}
 \end{align}
 
+
+\todo{Maybe extend this more, provide intuition}
+
+\todo{Maybe visualize something here}
