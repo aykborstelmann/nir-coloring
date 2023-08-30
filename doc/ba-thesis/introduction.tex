@@ -45,13 +45,13 @@ the NIR colorization solutions. As a result, these networks are now widely used 
 In the case of NIR colorization, the solutions are divided into paired and unpaired image translation problems and thus supervised and unsupervised learning techniques are applied respectively.
 For paired image translation, pixel-to-pixel registration and temporal synchronization are required for each image pair, which adds additional challenges.
 
-\Citeauthor*{limmer} used a dataset acquired by a specialized multi-CCD camera which ensures the image pair requirements \parencite{limmer}.
-Additionally, \Citeauthor*{limmer} proposed to use Deep Multiscale CNNs.
-In pre-processing, a normalized image pyramid is constructed by the NIR input and in post-processing, the CNN output is enriched with details from the input image \parencite{limmer}.
-In later work, \Citeauthor*{s-shape} introduced an S-Shape network consisting of one U-Net-based encoder "ColorNet" and a shallow network that generates an edge loss function "EdgeNet" \parencite{s-shape}.
-\Citeauthor*{s-shape} achieved pixel-to-pixel registration using geometric transformations and feature-based correspondence methods \parencite{s-shape}.
+\textcite{limmer} used a dataset acquired by a specialized multi-CCD camera which ensures the image pair requirements.
+Additionally, \textcite{limmer} proposed to use Deep Multiscale CNNs.
+In pre-processing, a normalized image pyramid is constructed by the NIR input and in post-processing, the CNN output is enriched with details from the input image.
+In later work, \textcite{s-shape} introduced an S-Shape network consisting of one U-Net-based encoder "ColorNet" and a shallow network that generates an edge loss function "EdgeNet".
+\textcite{s-shape} achieved pixel-to-pixel registration using geometric transformations and feature-based correspondence methods.
 
-In recent years, GAN-based methods have emerged as a powerful approach to unpaired image translation, which can be used for NIR image colorization without the need for paired training data.
+GAN-based methods have established themselves as a powerful approach to unpaired image translation, which can be used for NIR image colorization without the need for paired training data.
 This is especially useful if such data cannot be obtained, for example, due to dataset limitations.
 GANs by default tend to lose the content of the input image. CycleGAN as an architecture proposed by \Citeauthor*{cyclegan-original} uses a cycle consistency loss between the input and the generated image to solve that problem \cite{cyclegan-original}.
 It utilizes ResNet \parencite{resnet} as generator networks \parencite{cyclegan-original}.
@@ -59,26 +59,48 @@ It utilizes ResNet \parencite{resnet} as generator networks \parencite{cyclegan-
 \Citeauthor*{mehri} proposed a version of CycleGAN, specifically designed for the task of colorizing NIR images, which incorporates enhanced loss functions and utilizes U-Net as a generator \parencite{mehri}.
 
 More recently diffusion model advanced. 
-In contrast to GANs score based models iteratively perturb images using Gaussian noise and learn the inverse process. 
-After training such models are then given purely random Gaussian noise which the network the denoises to an image matching the target distribution. 
+First suggested by \textcite{deep-unsupervised-learning-using-nonequilibrium-thermodynamics} diffusion models are neural networks which gradually remove noise from signals. 
+Simultaneously \textcite{generative-modeling-by-estimating-gradients-of-the-data-distribution} introduced and studied score matching as a way of estimating the given data distribution using its gradients while sampling is achieved by leveraging Langevin dynamics \parencite{langevin-dynamics}.
 
+Later \textcite{ddpm} found first an essential connection between diffusion models and score based models and leveraged this connection to simplify the training objective of a variational lower bound.
+They introduced \textit{denoising diffusion probabilistic models} (DDPM) which is considered a milestone in the development of diffusion models.
 
+\textcite{sbgm} further analyzed the connection between score matching with Langevin dynamics and diffusion model and proposed a unified framework using stochastic differential equation
+and showed that both DDDPM \parencite{ddpm} and their previous work \parencite{generative-modeling-by-estimating-gradients-of-the-data-distribution} can be considered a specialized formulation of it.
+Further they introduce deterministic samplers using ordinary differential equations which allows likelihood computation and deterministic latent codes. 
+Most important, through their formulation they derive a conditional sampling method using an unconditional model to control the generation at interference time. 
+This allows applications such as image inpainting and gray-scale colorization which we base our work on. 
 
-\begin{enumerate}
-    \item DDPM \cite{ddpm}
-    \item Diffusion Models Beat GAN's on Image synthesis \cite{diffusion-beats-gans}
-    \item Score-Based Generative Modeling Through Stochastic Differential Equations \cite{sbgm}
-    \item Palette \cite{palette}
-    \item ILVR \cite{ilvr}
-    \item EGSDE \cite{egsde}
-    \item UNIT-DDPM ? \cite{unit-ddpm}
-    \item Repaint ? \cite{repaint}
-    \item A Study and Comprehensive Comparison of Visible-Infrared Image Fusion Techniques \cite{study-vis-nir-fusion}
-    \item NIR-RGB Fusion Methods: \url{https://scholar.google.de/scholar?hl=de&as_sdt=0%2C5&as_vis=1&q=nir+image+fusion+%7C+enhancement+gaussian+filter&btnG=}
-\end{enumerate}
+\textcite{diffusion-beats-gans} are first to outperform GANs in image generation with several architecture improvements.
+Additionally, they introduce \textit{classifier guidance}.
+This is a sampling method which uses unconditional diffusion models and only a classifier while interference to achieve class conditional sampling similar to \textcite{sbgm}.
+With that they provide a conditional sampling method inspired by \textcite{sbgm} for DDPMs. 
 
+\textcite{palette} train a multi-task \textit{image-conditional network} with application to gray-scale colorization. 
+In contrary to our approach they train use supervised learning to train a conditional diffusion model and therefore require a pair dataset a training time.
 
-We compare those two GAN-based methods and concentrate on the unpaired image translation problem.
+An approach which we categorize as \textit{correction-guided conditional sampling} is proposed by \textcite{ilvr}.
+They leverage an unconditional diffusion model and iteratively refine their current sample. 
+By this they achieve conditional sampling. 
+In contrast to our method they leverage a low-pass filter to refine the similarity between input and sample which is not applicable for colorizing near-infrared images. 
 
+\textcite{egsde} suggest an \textit{energy-guided conditional sampling} which steers the sampling using the gradient of an energy term.
+Their energy is divided into domain independent energy and domain specific energy. 
+The domain independent energy ensures the similarity to the input image while the domain specific energy ensures realism in the output domain. 
+However, their energies also are not applicable for NIR infrared colorization since their domain independent energy is again calculated based on a low-pass filter. 
+We modify their energy and apply it to NIR colorization to and compare it with our variant of correction guided sampling.
+
+Furthermore, research from the visible-infrared fusion field influences our work.
+VIS-NIR fusion focuses on enhancing RGB images with NIR images, e.g., by adding details to it. 
+As our approach can be considered iteratively fusioning visible and infrared images we get inspired by techniques used in this field of research.  
+\textcite{study-vis-nir-fusion} studied and compared comprehensively multiple visible-infrared fusion techniques. 
+One essential similarity between most of the compared methods is that the high-frequencies of the NIR infrared are combined with the visible-images's color and it low-frequencies in intensity.
+
+We develop a novel approach of colorizing near-infrared images leveraging the recent advances of diffusion models. 
+Focus is laid on the unpaired image translation because NIR-RGB image pairs are often hard to obtain. 
+We only need to train an unconditional diffusion model on the target domain. 
+Correction-guided sampling inspired by \textcite{ilvr} and enhanced for NIR infrared colorization using techniques from visible-infrared fusion \parencite{study-vis-nir-fusion} is proposed. 
+Furthermore, we study the difference with \textit{energy-guided} conditional sampling, as introduced \textcite{egsde}. 
+Finally, we ultimately compare it with an established GAN for near-infrared colorization by \textcite{mehri}. 
 
 \todo{introduction, which wavelength are near-infrared, which are VIS ?}
