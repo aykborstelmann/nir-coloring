@@ -1,7 +1,8 @@
 \chapter{Introduction}
 For wildlife monitoring, typically camera traps are used. During daylight, normal cameras succeed in capturing detailed images.
 But in the absence of daylight \textit{near-infrared} (NIR) cameras or normal cameras using incandescent lighting are necessary.
-NIR cameras offer a significant advantage over conventional cameras using incandescent lighting.
+Near infrared light has a wavelength of between $0.75$ µm and $1.4$ µm which lies outside the visible lights range ($700$nm - $1$mm).  
+Because of that, NIR cameras offer a significant advantage over conventional cameras using incandescent lighting.
 Light flashes are visible to animals and may frighten them, which leads animals to avoid the camera location afterward.
 Near-infrared light, however, is for most animals not visible, thus cannot scare them.
 However, unlike colored RGB images, NIR images lack colorization, which is essential for human comprehension and interpretation of visual information.
@@ -102,5 +103,3 @@ We only need to train an unconditional diffusion model on the target domain.
 Correction-guided sampling inspired by \textcite{ilvr} and enhanced for NIR infrared colorization using techniques from visible-infrared fusion \parencite{study-vis-nir-fusion} is proposed. 
 Furthermore, we study the difference with \textit{energy-guided} conditional sampling, as introduced \textcite{egsde}. 
 Finally, we ultimately compare it with an established GAN for near-infrared colorization by \textcite{mehri}. 
-
-\todo{introduction, which wavelength are near-infrared, which are VIS ?}
