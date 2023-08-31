@@ -459,7 +459,11 @@ We implement this colorization approach according to \autoref{alg:sampling-gray-
    \end{algorithmic}
 \end{algorithm}
 
-\todo{Visualize Process in Iteration}
+\begin{figure}
+   \includegraphics[width=\textwidth]{gfx/Gray-Scale-Colorization-Sampling.pdf}
+   \caption{Visualization of \autoref{alg:sampling-gray-scale-colorization}.}
+   \label{fig:sampling-gray-scale-colorization}
+\end{figure}
 
 We call this method \textit{correction-guided} sampling since we guide the sampling process by \textit{correcting} the sample in each iteration.
 
@@ -585,6 +589,12 @@ and finally compare it with CycleGAN in \autoref{sec:diffusion-vs-cyclegan}.
       \Return $\x_0$
    \end{algorithmic}
 \end{algorithm}
+
+\begin{figure}
+   \includegraphics[width=\textwidth]{gfx/NIR-Colorization-Sampling.pdf}
+   \caption{Visualization of \autoref{alg:sampling-nir-colorization}.}
+   \label{fig:sampling-nir-colorization}
+\end{figure}
 
 \todo{Connection to \autoref{sec:conditional-sampling}}
 
