@@ -53,7 +53,7 @@ First we evaluate the unconditional sampling of the diffusion model and therefor
 \begin{figure}[htp!]
     \centering
     \setkeys{Gin}{width=1\linewidth}
-    \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
+    \begin{tabularx}{\textwidth}{Y Y Y !{\space} Y Y Y}
         RGB                                                                                    & CycleGAN                                                                                         & Diffusion                                                                                    & RGB                                                                                    & CycleGAN                                                                                         & Diffusion                                                                                    \\
         \includegraphics{gfx/unconditional-diffusion-sampling-qual/rgb_S2_B04_R3_IMAG0432.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/cyclegan_S2_B06_R1_PICT0128_fake.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/diffusion_S2_C07_R1_PICT0028.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/rgb_S2_B04_R3_IMAG0471.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/cyclegan_S2_B06_R1_PICT0279_fake.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/diffusion_S2_B07_R3_PICT0492.png} \\
         \includegraphics{gfx/unconditional-diffusion-sampling-qual/rgb_S2_B05_R1_IMAG0084.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/cyclegan_S2_B06_R1_PICT0387_fake.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/diffusion_S2_B06_R1_PICT0387.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/rgb_S2_B05_R1_IMAG0132.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/cyclegan_S2_B06_R3_PICT1364_fake.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/diffusion_S2_B08_R1_PICT0359.png} \\
@@ -72,14 +72,14 @@ Images containing animals illustrates the model performs exceptionally well in c
 Only in few cases, trees are generated with undistinguishable branches. This is the only flaw which can be observed.
 
 Quantitatively in \autoref{fig:quantitative-evaluation-unconditional-sampling} we see, the diffusion network only slightly outperforms CycleGAN's performance.
-We expect clearer distinction to CycleGAN when a larger U-Net would be used, more training iterations and a larger dataset would be used. 
+We expect clearer distinction to CycleGAN when a larger U-Net would be used, more training iterations and a larger dataset would be used.
 Compared to \textcite{diffusion-beats-gans} we had to do trade-offs due to a lack of ultra-high performant computational resources.
 Nevertheless, it can be argued that this unconditional diffusion model is capable enough to be a basis for a good colorization.
 
 \todo{Provide hyperparameter}
 
 \section{Loss-Guided and Correction-Guided Sampling}
-As introduced in \autoref{sec:conditional-sampling} we suggest a differentiation into 
+As introduced in \autoref{sec:conditional-sampling} we suggest a differentiation into
 \textit{loss-guided} (\autoref{sec:energy-guided-sampling}) and \textit{correction-guided} (\autoref{sec:correction-guided-sampling}) sampling.
 
 At first sight we observe greater simplicity in defining a loss or energy rather than correcting an image.
@@ -99,7 +99,7 @@ This observation is also quantitatively reflected, the FID of the loss-guided sa
 \begin{figure}[htp!]
     \centering
     \setkeys{Gin}{width=1\linewidth}
-    \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
+    \begin{tabularx}{\textwidth}{Y Y Y !{\space} Y Y Y}
         \centering NIR                                                                                            & Correction-Guided                                                                                                                 & Loss-Guided                                                                                                                 & NIR                                                                                                       & Correction-Guided                                                                                                                 & Loss-Guided                                                                                                                 \\
         \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/nir_S2_B06_R1_PICT0128.jpg} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-correction-guided_S2_B06_R1_PICT0128.png} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-loss-guided_S2_B06_R1_PICT0128.png} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/nir_S2_B06_R1_PICT0279.jpg} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-correction-guided_S2_B06_R1_PICT0279.png} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-loss-guided_S2_B06_R1_PICT0279.png} \\
         \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/nir_S2_B06_R1_PICT0387.jpg} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-correction-guided_S2_B06_R1_PICT0387.png} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-loss-guided_S2_B06_R1_PICT0387.png} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/nir_S2_B06_R3_PICT1364.jpg} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-correction-guided_S2_B06_R3_PICT1364.png} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-loss-guided_S2_B06_R3_PICT1364.png} \\
@@ -135,13 +135,13 @@ This observation is also quantitatively reflected, the FID of the loss-guided sa
 \Textcite{sbgm} already suggested colorization methods using diffusion models.
 Although in comparison visible light, near-infrared light has different reflection properties,
 we could ignore this property and assume the NIR intensity to be a good approximation of the visual light's intensity.
-Therefore, we start by implementing colorization as \autoref{sec:correction-guided-sampling-gray-scale-colorization} and evaluate 
+Therefore, we start by implementing colorization as \autoref{sec:correction-guided-sampling-gray-scale-colorization} and evaluate
 this idea empirically.
 
 \begin{figure}[htp!]
     \centering
     \setkeys{Gin}{width=1\linewidth}
-    \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
+    \begin{tabularx}{\textwidth}{Y Y Y !{\space} Y Y Y}
         NIR                                                                                & CycleGAN                                                                                     & Diffusion                                                                                & NIR                                                                                & CycleGAN                                                                                     & Diffusion                                                                                \\
         \includegraphics{gfx/diffusion-sampling-intensity-qual/nir_S2_B06_R1_PICT0128.jpg} & \includegraphics{gfx/diffusion-sampling-intensity-qual/cyclegan_S2_B06_R1_PICT0128_fake.png} & \includegraphics{gfx/diffusion-sampling-intensity-qual/diffusion_S2_B06_R1_PICT0128.png} & \includegraphics{gfx/diffusion-sampling-intensity-qual/nir_S2_B06_R1_PICT0279.jpg} & \includegraphics{gfx/diffusion-sampling-intensity-qual/cyclegan_S2_B06_R1_PICT0279_fake.png} & \includegraphics{gfx/diffusion-sampling-intensity-qual/diffusion_S2_B06_R1_PICT0279.png} \\
         \includegraphics{gfx/diffusion-sampling-intensity-qual/nir_S2_B06_R1_PICT0387.jpg} & \includegraphics{gfx/diffusion-sampling-intensity-qual/cyclegan_S2_B06_R1_PICT0387_fake.png} & \includegraphics{gfx/diffusion-sampling-intensity-qual/diffusion_S2_B06_R1_PICT0387.png} & \includegraphics{gfx/diffusion-sampling-intensity-qual/nir_S2_B06_R3_PICT1364.jpg} & \includegraphics{gfx/diffusion-sampling-intensity-qual/cyclegan_S2_B06_R3_PICT1364_fake.png} & \includegraphics{gfx/diffusion-sampling-intensity-qual/diffusion_S2_B06_R3_PICT1364.png} \\
@@ -154,7 +154,7 @@ this idea empirically.
     \label{fig:qualitative-evaluation-intensity}
 \end{figure}
 
-In \autoref{fig:qualitative-evaluation-intensity} we show evaluation results of this approach. 
+In \autoref{fig:qualitative-evaluation-intensity} we show evaluation results of this approach.
 Qualitatively we can observe those generated images are faithful to the input image (\autoref{fig:qualitative-evaluation-intensity}).
 It is to be mentioned that faithfulness to the input image is not a quality learned by the network, but a design choice of the sampling procedure.
 Most noteworthy is that the colors estimated by the diffusion model appear realistic.
@@ -219,7 +219,7 @@ To investigate this, in \autoref{fig:qualitative-evaluation-cyclegan-conditional
 \begin{figure}[htp!]
     \centering
     \setkeys{Gin}{width=1\linewidth}
-    \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
+    \begin{tabularx}{\textwidth}{Y Y Y !{\space} Y Y Y}
         NIR                                                                              & CycleGAN                                                                                   & Diffusion with CycleGAN Input                                                                    & NIR                                                                              & CycleGAN                                                                                   & Diffusion with CycleGAN Input                                                                    \\
         \includegraphics{gfx/conditional-with-cycle-gan-qual/nir_S2_B06_R1_PICT0128.jpg} & \includegraphics{gfx/conditional-with-cycle-gan-qual/cyclegan_S2_B06_R1_PICT0128_fake.png} & \includegraphics{gfx/conditional-with-cycle-gan-qual/diff_cycle_gan_S2_B06_R1_PICT0128_fake.png} & \includegraphics{gfx/conditional-with-cycle-gan-qual/nir_S2_B06_R1_PICT0279.jpg} & \includegraphics{gfx/conditional-with-cycle-gan-qual/cyclegan_S2_B06_R1_PICT0279_fake.png} & \includegraphics{gfx/conditional-with-cycle-gan-qual/diff_cycle_gan_S2_B06_R1_PICT0279_fake.png} \\
         \includegraphics{gfx/conditional-with-cycle-gan-qual/nir_S2_B06_R1_PICT0387.jpg} & \includegraphics{gfx/conditional-with-cycle-gan-qual/cyclegan_S2_B06_R1_PICT0387_fake.png} & \includegraphics{gfx/conditional-with-cycle-gan-qual/diff_cycle_gan_S2_B06_R1_PICT0387_fake.png} & \includegraphics{gfx/conditional-with-cycle-gan-qual/nir_S2_B06_R3_PICT1364.jpg} & \includegraphics{gfx/conditional-with-cycle-gan-qual/cyclegan_S2_B06_R3_PICT1364_fake.png} & \includegraphics{gfx/conditional-with-cycle-gan-qual/diff_cycle_gan_S2_B06_R3_PICT1364_fake.png} \\
@@ -254,7 +254,7 @@ which results in overall more realistic images.
 This subtle difference between the CycleGAN and the diffusion model samples with CycleGAN intensity inputs is also visible while comparing the images quantitatively in \autoref{fig:quantitative-evaluation-cyclegan-conditional-sampling}.
 The diffusion model performs better than CycleGAN when the intensities are appropriate.
 Diffusion models theoretically perform best in the unconditional sampling in comparison when they being guided by unseen data.
-In the unconditional setting it only performs $1.2$ FID points better (\autoref{fig:quantitative-evaluation-unconditional-sampling}). 
+In the unconditional setting it only performs $1.2$ FID points better (\autoref{fig:quantitative-evaluation-unconditional-sampling}).
 Therefore, we have shown that the assumption that the near-infrared intensities approximate the visual intensities well,
 is the main factor explaining the difference between the quantitative results.
 
@@ -270,7 +270,7 @@ In \autoref{fig:qualitative-evaluation-full-high-pass} we evaluate the results o
 \begin{figure}[htp!]
     \centering
     \setkeys{Gin}{width=1\linewidth}
-    \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
+    \begin{tabularx}{\textwidth}{Y Y Y !{\space} Y Y Y}
         NIR                                                                                               & Full-Pass                                                                                               & High-Pass                                                                                               & NIR                                                                                               & Full-Pass                                                                                               & High-Pass                                                                                               \\
         \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/nir_S2_B06_R1_PICT0128.jpg} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/full-pass_S2_B06_R1_PICT0128.png} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/high-pass_S2_B06_R1_PICT0128.png} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/nir_S2_B06_R1_PICT0279.jpg} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/full-pass_S2_B06_R1_PICT0279.png} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/high-pass_S2_B06_R1_PICT0279.png} \\
         \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/nir_S2_B06_R1_PICT0387.jpg} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/full-pass_S2_B06_R1_PICT0387.png} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/high-pass_S2_B06_R1_PICT0387.png} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/nir_S2_B06_R3_PICT1364.jpg} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/full-pass_S2_B06_R3_PICT1364.png} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/high-pass_S2_B06_R3_PICT1364.png} \\
@@ -310,7 +310,42 @@ This method achieves a FID of $95.49$ which is even $0.53$ FID points better tha
 \subsection{Influence of Hyperparameter Sigma}
 \label{sec:influence-of-sigma-evaluation}
 
-\todo{Write}
+While introducing the hyperparameter $\sigma$ in \autoref{sec:correction-guided-sampling-nir-colorization}, we further want to discuss its influence on the samples.
+As $\sigma$ controls the strength of the Gaussian-filter for the low-frequency extraction, increasing it, reduces information in the extracted low-frequencies.
+Vice versa $\sigma$ raising $\sigma$, leads to more information in the extracted high-frequencies.
+We visualize this effect in \autoref{fig:low-and-high-freq-effects-of-sigma}.
+
+
+\begin{figure}[htp!]
+    \centering
+    \setkeys{Gin}{width=1\linewidth}
+    \begin{tabularx}{.5\textwidth}{|Y|Y|}
+        \hline
+        Test & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/nir_S2_B06_R1_PICT0128.jpg} \\
+        \hline
+        \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/nir_S2_B06_R1_PICT0128.jpg} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/nir_S2_B06_R1_PICT0128.jpg} \\
+        \hline
+    \end{tabularx}
+
+    \caption{Visualization of different $\sigma$s}
+    \label{fig:low-and-high-freq-effects-of-sigma}
+\end{figure}
+
+Recall, high-frequency intensities of the near-infrared are combined with the generated low-frequency intensities.
+Therefore, a higher $\sigma$ also corresponds to more guidance by the near-infrared image.
+On the other hand lower $\sigma$ corresponds to more freedom in generation for the model.
+Furthermore one might expect, lower $\sigma$s to correspond to lower and better FIDs, while higher $\sigma$ should
+also correspond to higher FIDs and more content preservation.
+
+In \autoref{fig:quantitative-evaluation-influence-of-sigma-to-fid} we visualize the effects of $\sigma$.
+All samplings have the same seed, therefore all intermediate samples are the same for all runs.
+
+\begin{figure}[htp!]
+    \caption{Influence of $\sigma$ to the FID. On the x-axis the FID (lower is better) and on the y-axis the $\sigma$ for the model}
+    \label{fig:quantitative-evaluation-influence-of-sigma-to-fid}
+\end{figure}
+
+
 
 \section{Diffusion and GAN}
 \label{sec:diffusion-vs-cyclegan}
@@ -341,7 +376,7 @@ Compared with other FIDs in this work we consider it a good value.
 \begin{figure}[htp!]
     \centering
     \setkeys{Gin}{width=1\linewidth}
-    \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
+    \begin{tabularx}{\textwidth}{Y Y Y !{\space} Y Y Y !{\space}}
         RGB                                                                                                              & Diffusion                                                                               & RGB                                                                                                              & Diffusion                                                                               & RGB                                                                                                              & Diffusion                                                                               \\
         \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_5858c0dc-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00000.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585a640e-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00001.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585a6486-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00002.png} \\
         \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585dab96-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00003.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585f4d99-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00004.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585f4fbd-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00005.png} \\
@@ -360,7 +395,7 @@ sample using CycleGAN.
 \begin{figure}[htp!]
     \centering
     \setkeys{Gin}{width=1\linewidth}
-    \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
+    \begin{tabularx}{\textwidth}{Y Y Y !{\space} Y Y Y}
         NIR                                                                                                            & CycleGAN                                                                                                                 & Diffusion                                                                                                            & NIR                                                                                                            & CycleGAN                                                                                                                 & Diffusion                                                                                                            \\
         \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/nir_585a6303-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/cyclegan_585a6303-23d2-11e8-a6a3-ec086b02610b_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/diffusion_585a6303-23d2-11e8-a6a3-ec086b02610b.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/nir_585a6394-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/cyclegan_585a6394-23d2-11e8-a6a3-ec086b02610b_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/diffusion_585a6394-23d2-11e8-a6a3-ec086b02610b.png} \\
         \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/nir_585c042f-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/cyclegan_585c042f-23d2-11e8-a6a3-ec086b02610b_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/diffusion_585c042f-23d2-11e8-a6a3-ec086b02610b.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/nir_585c05fe-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/cyclegan_585c05fe-23d2-11e8-a6a3-ec086b02610b_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-caltech-qual/diffusion_585c05fe-23d2-11e8-a6a3-ec086b02610b.png} \\
@@ -396,8 +431,8 @@ On the other the diffusion model does not create such hallucinations in form of 
 As in the left top image of \autoref{fig:qualitative-evaluation-conditional-sampling-caltech} is observable, the diffusion network artificially lightens the image and colors it green, as CycleGAN also does.
 In some images, its samples appear rather monochrome than colored (\autoref{fig:qualitative-evaluation-conditional-sampling-caltech}).
 When comparing with the unconditional sampling, this indicates the diffusion model learned to approximate the target domain in daytime areas well, but is unfamiliar with nighttime images.
-It therefore rather reproduces day times features than staying consistent with the input image. 
-To keep the high-frequencies of the intensity of the near-infared image appears to be not compatible with transforming night to day times images. 
+It therefore rather reproduces day times features than staying consistent with the input image.
+To keep the high-frequencies of the intensity of the near-infared image appears to be not compatible with transforming night to day times images.
 This makes the images generally more unrealistic.
 
 When comparing the fréchet inception distance, CycleGAN performs much better than the diffusion model having a difference of $27.57$ points (\autoref{fig:quantitative-evaluation-conditional-sampling-caltech}).
@@ -418,7 +453,7 @@ We compare performances of our trained CycleGAN \autoref{sec:methods-cycle-gan} 
 \begin{figure}
     \centering
     \setkeys{Gin}{width=1\linewidth}
-    \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X}
+    \begin{tabularx}{\textwidth}{Y Y Y !{\space} Y Y Y}
         NIR                                                                                  & CycleGAN                                                                                       & Diffusion                                                                                  & NIR                                                                                  & CycleGAN                                                                                       & Diffusion                                                                                  \\
         \includegraphics{gfx/conditional-diffusion-sampling-qual/nir_S2_B06_R1_PICT0128.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-qual/cyclegan_S2_B06_R1_PICT0128_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/diffusion_S2_B06_R1_PICT0128.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/nir_S2_B06_R1_PICT0279.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-qual/cyclegan_S2_B06_R1_PICT0279_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/diffusion_S2_B06_R1_PICT0279.png} \\
         \includegraphics{gfx/conditional-diffusion-sampling-qual/nir_S2_B06_R1_PICT0387.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-qual/cyclegan_S2_B06_R1_PICT0387_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/diffusion_S2_B06_R1_PICT0387.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/nir_S2_B06_R3_PICT1364.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-qual/cyclegan_S2_B06_R3_PICT1364_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/diffusion_S2_B06_R3_PICT1364.png} \\
@@ -441,11 +476,10 @@ As a small proportion of the training and test dataset also contains images whil
 
 \begin{figure}
     \centering
-    \setkeys{Gin}{width=1\linewidth}
-    \todo{Fix vertical text}
-    \begin{tabularx}{.7\textwidth}{>{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X >{\centering\arraybackslash}X }
+    \setkeys{Gin}{width=\linewidth}
+    \begin{tabularx}{.6\textwidth}{>{\small}m{.03\linewidth} Y Y Y}
         \begin{sideways}NIR\end{sideways} & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/nir_S2_C07_R3_PICT0462.jpg}       & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/nir_S2_G13_R1_PICT0332.jpg}       & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/nir_S2_T11_R2_PICT0208.jpg}       \\
-        \rotatebox{90}{NIR} & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/diffusion_S2_C07_R3_PICT0462.png} & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/diffusion_S2_G13_R1_PICT0332.png} & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/diffusion_S2_T11_R2_PICT0208.png}
+        \begin{sideways}Diffusion\end{sideways} & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/diffusion_S2_C07_R3_PICT0462.png} & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/diffusion_S2_G13_R1_PICT0332.png} & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/diffusion_S2_T11_R2_PICT0208.png}
     \end{tabularx}
     \caption{
         \todo{Add caption}
@@ -470,9 +504,9 @@ In \autoref{fig:quantitative-evaluation-conditional-sampling} we provide a quant
     \label{fig:quantitative-evaluation-conditional-sampling}
 \end{table}
 
-The diffusion sampling outperforms CycleGAN in terms of FID by $2.61$ points. 
-We hypothesize the reason for this is, that the diffusion model generates a higher diversity of color images including (hallucinated) sky artifacts which matches the distribution of images in the test dataset. 
+The diffusion sampling outperforms CycleGAN in terms of FID by $2.61$ points.
+We hypothesize the reason for this is, that the diffusion model generates a higher diversity of color images including (hallucinated) sky artifacts which matches the distribution of images in the test dataset.
 Considering the unconditional diffusion model does have any more head start, this quantitative superiority shows the strength of the conditioning method introduced by us.
 
-While comparing both methods it is to note, that the diffusion model requires much more computational resources in training and interference than CycleGAN. 
+While comparing both methods it is to note, that the diffusion model requires much more computational resources in training and interference than CycleGAN.
 This is a known weakness of diffusion models in general and we address this further in \autoref{sec:future-work}.

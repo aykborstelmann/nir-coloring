@@ -54,9 +54,12 @@
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{tabularx}
+\renewcommand{\tabularxcolumn}[1]{>{\small}m{#1}}
+\newcolumntype{Y}{@{} >{\centering\arraybackslash}X @{}}
 \usepackage{pgf}
 \usepackage{hyperref}
 \usepackage{rotating}
+\usepackage[export]{adjustbox}
 \newcommand{\algorithmautorefname}{Algorithm}
 
 
