@@ -319,12 +319,10 @@ We visualize this effect in \autoref{fig:low-and-high-freq-effects-of-sigma}.
 \begin{figure}[htp!]
     \centering
     \setkeys{Gin}{width=1\linewidth}
-    \begin{tabularx}{.5\textwidth}{|Y|Y|}
-        \hline
-        Test & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/nir_S2_B06_R1_PICT0128.jpg} \\
-        \hline
-        \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/nir_S2_B06_R1_PICT0128.jpg} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/nir_S2_B06_R1_PICT0128.jpg} \\
-        \hline
+    \begin{tabularx}{.6\textwidth}{>{\centering\arraybackslash}m{.08\linewidth} Y Y Y}
+                                                                    & $\sigma=1$                                                           & $\sigma=5$                                                           & $\sigma=10$                                                           \\
+        \begin{sideways}\makecell{Low-\\Frequencies}\end{sideways}  & \includegraphics{gfx/low-high-freq-effects-of-sigma/low_freq_1.png}  & \includegraphics{gfx/low-high-freq-effects-of-sigma/low_freq_5.png}  & \includegraphics{gfx/low-high-freq-effects-of-sigma/low_freq_10.png}  \\
+        \begin{sideways}\makecell{High-\\Frequencies}\end{sideways} & \includegraphics{gfx/low-high-freq-effects-of-sigma/high_freq_1.png} & \includegraphics{gfx/low-high-freq-effects-of-sigma/high_freq_5.png} & \includegraphics{gfx/low-high-freq-effects-of-sigma/high_freq_10.png} \\
     \end{tabularx}
 
     \caption{Visualization of different $\sigma$s}
@@ -478,7 +476,7 @@ As a small proportion of the training and test dataset also contains images whil
     \centering
     \setkeys{Gin}{width=\linewidth}
     \begin{tabularx}{.6\textwidth}{>{\small}m{.03\linewidth} Y Y Y}
-        \begin{sideways}NIR\end{sideways} & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/nir_S2_C07_R3_PICT0462.jpg}       & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/nir_S2_G13_R1_PICT0332.jpg}       & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/nir_S2_T11_R2_PICT0208.jpg}       \\
+        \begin{sideways}NIR\end{sideways}       & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/nir_S2_C07_R3_PICT0462.jpg}       & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/nir_S2_G13_R1_PICT0332.jpg}       & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/nir_S2_T11_R2_PICT0208.jpg}       \\
         \begin{sideways}Diffusion\end{sideways} & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/diffusion_S2_C07_R3_PICT0462.png} & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/diffusion_S2_G13_R1_PICT0332.png} & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/diffusion_S2_T11_R2_PICT0208.png}
     \end{tabularx}
     \caption{
