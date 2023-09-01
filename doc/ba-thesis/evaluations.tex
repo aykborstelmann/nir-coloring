@@ -33,6 +33,7 @@ The second category refers to the \textit{content preservation} of the input ima
 \textit{Hallucinations}, as artifacts or scene elements that are not in the input image, contradict naturality and content preservation, and therefore are undesirable.
 
 \section{Unconditional Diffusion Model}
+\label{sec:unconditional-diffusion-sampling-evaluation}
 First we evaluate the unconditional sampling of the diffusion model and therefore validate \parencite{diffusion-beats-gans}'s results for image synthesis in still hold for this dataset:
 
 \begin{table}[htp!]
@@ -312,7 +313,7 @@ This method achieves a FID of $95.49$ which is even $0.53$ FID points better tha
 
 While introducing the hyperparameter $\sigma$ in \autoref{sec:correction-guided-sampling-nir-colorization}, we further want to discuss its influence on the samples.
 As $\sigma$ controls the strength of the Gaussian-filter for the low-frequency extraction, increasing it, reduces information in the extracted low-frequencies.
-Vice versa $\sigma$ raising $\sigma$, leads to more information in the extracted high-frequencies.
+Vice versa raising $\sigma$, leads to more information in the extracted high-frequencies.
 We visualize this effect in \autoref{fig:low-and-high-freq-effects-of-sigma}.
 
 
@@ -332,21 +333,36 @@ We visualize this effect in \autoref{fig:low-and-high-freq-effects-of-sigma}.
 Recall, high-frequency intensities of the near-infrared are combined with the generated low-frequency intensities.
 Therefore, a higher $\sigma$ also corresponds to more guidance by the near-infrared image.
 On the other hand lower $\sigma$ corresponds to more freedom in generation for the model.
-Furthermore one might expect, lower $\sigma$s to correspond to lower and better FIDs, while higher $\sigma$ should
-also correspond to higher FIDs and more content preservation.
 
-In \autoref{fig:quantitative-evaluation-influence-of-sigma-to-fid} we visualize the effects of $\sigma$.
-All samplings have the same seed, therefore all intermediate samples are the same for all runs.
+In \autoref{fig:quantitative-evaluation-influence-of-sigma-to-fid} we visualize the effects of $\sigma$ on the FID.
+We evaluate with the same seed, with the intention to have as few influence of randomness as possible.
 
 \begin{figure}[htp!]
     \begin{center}
         \input{gfx/influence-of-sigma.pgf}
     \end{center}
-    \caption{Influence of $\sigma$ to the FID. On the x-axis the FID (lower is better) and on the y-axis the $\sigma$ for the model}
+    \caption{
+        Influence of hyperparameter $\sigma$ to the FID.
+        On the x-axis the FID (lower is better) and on the y-axis the $\sigma$ for the model.
+        \textcolor{ub-blue}{Solid blue line} high frequency replacement sampling with FID dependent on $\sigma$ (\autoref{sec:correction-guided-sampling-nir-colorization}),
+        \textcolor{ub-blue}{dotted blue line} intensity replacement sampling FID (\autoref{sec:correction-guided-sampling-gray-scale-colorization}),
+        \textcolor{ub-yellow}{orange line} CycleGAN FID (\autoref{sec:methods-cycle-gan}) and \textcolor{ub-gray}{gray line} unconditional diffusion sampling FID \autoref{sec:unconditional-diffusion-sampling-evaluation}.
+        FID scores are obtained with all evaluations having the same seed to reduce the effect of randomness.    
+    }
     \label{fig:quantitative-evaluation-influence-of-sigma-to-fid}
 \end{figure}
 
+It is observable, that samples with a $\sigma$ of less than 1 are quantitative worse (\autoref{fig:quantitative-evaluation-influence-of-sigma-to-fid}).
+Our hypothesis is, that at this point, some guidance is given, but so few that the task of sampling within these boundaries is too hard for the diffusion model.
 
+We find that around a $\sigma$ of $2.3$ the lowest FID is reached. 
+Here enough guidance for the model given to make the task of sampling color reasonable, but not too much, so the model is too restricted. 
+
+For higher $\sigma$, more guidance and, vice verse, less freedom for the diffusion model is given. 
+Therefore, the FID rises, as the similarity to the test dataset shrinks.
+On the other hand, we observe quantitatively that the proportion of hallucinated blue sky is rarer.
+
+We therefore consider $\sigma$ a hyperparameter which controls the proportion between realism and content-preservation. 
 
 \section{Diffusion and GAN}
 \label{sec:diffusion-vs-cyclegan}
