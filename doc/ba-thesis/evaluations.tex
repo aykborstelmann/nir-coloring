@@ -195,7 +195,7 @@ We compare this with the near-infrared intensity in \autoref{fig:heatmap-cycle-g
 
 \begin{figure}[htp!]
     \centering
-    \includegraphics[width=\textwidth]{gfx/heatmap-nir-cycle-gan-intensity-diff.png}
+    \includegraphics[width=\textwidth]{gfx/heatmap-nir-cycle-gan-intensity-diff.pdf}
     \caption{
         \todo{Better integration (using pdf or so); Best: Direct latex code}
         Absolute difference between CycleGAN's intensity and the NIR image.
@@ -339,6 +339,9 @@ In \autoref{fig:quantitative-evaluation-influence-of-sigma-to-fid} we visualize 
 All samplings have the same seed, therefore all intermediate samples are the same for all runs.
 
 \begin{figure}[htp!]
+    \begin{center}
+        \input{gfx/influence-of-sigma.pgf}
+    \end{center}
     \caption{Influence of $\sigma$ to the FID. On the x-axis the FID (lower is better) and on the y-axis the $\sigma$ for the model}
     \label{fig:quantitative-evaluation-influence-of-sigma-to-fid}
 \end{figure}
