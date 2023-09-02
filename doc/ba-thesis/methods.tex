@@ -183,13 +183,17 @@ $\lambda$ and $\gamma$ are weights for the relative importance of the L1 cycle c
 \end{equation}
 
 \subsubsection*{U-Net}
+\label{sec:cycle-gan-u-net}
 In praxis, both functions $G$ and $F$ are generation networks. Contrary to the ResNet generators \parencite{resnet} \citeauthor{cyclegan-original} used in the original CycleGAN \parencite{cyclegan-original},
 \citeauthor*{mehri} propose U-Net generators \parencite{unet}, because they perform better in learning the color \parencite{mehri}.
 Additionally, U-Net generators also need less computational time for training compared to ResNet \parencite{mehri}.
 We input all three (equal) channels of the NIR image into the generator and receive an RGB image as output.
 All activations of the encode-blocks (except the last one) are inputs for two blocks:
-The following encode- as well as the corresponding decode-block. This is called a skip connection \parencite{unet} (\autoref{fig:unet}). All decode-blocks (except the first one) receive input from the previous decode-block, as well as the corresponding encode-block.
-This leads to an architecture that can learn to "choose" how deep the feature abstraction should be \parencite{unet}.
+The following encode- as well as the corresponding decode-block. This is called a skip connection \parencite{unet} (\autoref{fig:unet}). 
+All decode-blocks (except the first one) receive input from the previous decode-block, as well as the corresponding encode-block.
+Each encode-block consists of residual-blocks and downsample-blocks while all decode-blocks have upsample-blocks instead \parencite{unet}. 
+Conceptually, the most abstract information can be found at the bottleneck (between encode and decode) and the most concrete information is located near the input and output of the model.
+Through the skip connection the architecture that can learn to "choose" how deep the feature abstraction should be \parencite{unet}.
 
 \begin{figure}[h]
    \includegraphics[width=\textwidth]{gfx/CycleGAN-Unet.pdf}
@@ -211,9 +215,9 @@ Therefore, \citeauthor*{mehri} propose to decrease the weight of the cycle consi
 
 \section{Diffusion Models}
 Denoising Diffusion Probabilistic Models as introduced by \cite{ddpm} are generative networks recently advancing.
-We provide a detailed theoretical background for this architecture in \autoref{sec:diffusion-prerequisites}. 
+We provide a detailed theoretical background for this architecture in \autoref{sec:diffusion-prerequisites}.
 Further we answer theoretically how one can use unconditional diffusion to sample given a condition in \autoref{sec:conditional-sampling}.
-Our approach for grayscale-colorization and near-infrared colorization is presented in \autoref{sec:correction-guided-sampling} while 
+Our approach for grayscale-colorization and near-infrared colorization is presented in \autoref{sec:correction-guided-sampling} while
 we introduce at first sight simpler formulation using what we call \textit{energy-guided conditional sampling} in \autoref{sec:energy-guided-sampling}.
 
 \subsection{Prerequisites}
@@ -363,16 +367,18 @@ and the parameterization of the mean given an $\epsilon$ predicted by the model 
 
 \todo{Visualize Sampling Procedure}
 
-\todo{Section with implementation, such as U-Net for $\epsilon$ prediction, ...}
-
 \todo{Structural comparison with CycleGAN}
+
+Similar to CycleGAN, diffusion models utilize the U-Net architecture for learning the noise $\epsilon_\theta(\x_t,t)$ \parencite{unet,mehri,ddpm,diffusion-beats-gans} (see \autoref{sec:cycle-gan-u-net}).
+Additionally, \cite{diffusion-beats-gans} use global attention blocks.  
+Unlike CycleGAN, the model needs information about the timestep $t$. This is provided using sinusoidal position embedding into the residual blocks \parencite{ddpm}.
 
 \subsection{Conditional Sampling}
 \label{sec:conditional-sampling}
-As now the unconditional sampling is derived, our application context of NIR colorization does not benefit from it yet. 
-A method is needed to \textit{condition} our diffusion model on the given NIR image. 
-We now derive a general purpose conditioning method as \textcite{sbgm,diffusion-beats-gans} introduced them and show in \autoref{sec:correction-guided-sampling} and \autoref{sec:energy-guided-sampling} 
-two different way of leveraging to achieve our goal. 
+As now the unconditional sampling is derived, our application context of NIR colorization does not benefit from it yet.
+A method is needed to \textit{condition} our diffusion model on the given NIR image.
+We now derive a general purpose conditioning method as \textcite{sbgm,diffusion-beats-gans} introduced them and show in \autoref{sec:correction-guided-sampling} and \autoref{sec:energy-guided-sampling}
+two different way of leveraging to achieve our goal.
 
 Given a Gaussian distribution $p(\x) = \mathcal{N}(\x, \mu, \sigma^2 \mathbf{I})$ the derivative of the density function $\nabla_\x \log p(\x)$, called \textit{score-function} can be rewritten as in \autoref{eqn:score-function} for an $\epsilon \sim \mathcal{N}(0, \mathbf{I})$ \parencite{sbgm}.
 
@@ -390,7 +396,7 @@ we find a connection between score-functions and our noise estimator network \pa
 \end{equation}
 
 If we want now to sample using a condition $\ce$, then we would need to sample from the distribution $p_\theta(\x_t | \ce)$ each iteration.
-To be able to sample from this distribution we can derive an new noise estimator $\bar{\epsilon}_\theta(\x_t, \ce, t)$ which 
+To be able to sample from this distribution we can derive an new noise estimator $\bar{\epsilon}_\theta(\x_t, \ce, t)$ which
 separates the conditioning $p_\theta(\ce|\x_t)$ and the unconditional noise estimator $\epsilon_\theta(\x_t, t)$ (\autoref{eqn:derive-new-noise-estimator}) \parencite{sbgm,diffusion-beats-gans}.
 
 \begin{equation}
@@ -417,7 +423,7 @@ It is only needed to calculate or approximate the score-function $\nabla_{\x_t} 
    \caption{Conditional Sampling}
    \label{alg:sampling-conditional}
    \begin{algorithmic}
-      \Require A score-function $\nabla_{\x_t} \log p_\theta(\ce|\x_t)$ modeling the derivative of the log of the density function to the condition $\ce$ given a noised image $\x_t$. 
+      \Require A score-function $\nabla_{\x_t} \log p_\theta(\ce|\x_t)$ modeling the derivative of the log of the density function to the condition $\ce$ given a noised image $\x_t$.
       \State $\x_T \sim \mathcal{N}(0, \mathbf{I})$
       \For{$t = T, \dots, 1$}
       \State $\mathbf{z} \sim \mathcal{N}(0, \mathbf{I})$ \algorithmicif\ $t > 0$, \algorithmicelse\ $\mathbf{z} = 0$
@@ -607,15 +613,15 @@ Given an input image $\y_0$, we define $p_\theta(\y_0|\x_t)$ as \autoref{eqn:ene
    p_\theta(\y_0|\x_t) = \exp(\mathcal{E}(\x_t, \y_0, t))
 \end{equation}
 
-To guide the image generation using the diffusion network the energy function must be designed. 
+To guide the image generation using the diffusion network the energy function must be designed.
 
-As further discussed in \autoref{sec:correction-guided-sampling}, 
+As further discussed in \autoref{sec:correction-guided-sampling},
 we could now model the energy function either by comparing the intensities (\autoref{eqn:energy-intensities}) or by comparing the high frequencies of the intensities (\autoref{eqn:energy-high-freq-intensities}).
-Here, the $\x^I_t$ and $\y^I_t$ denote the intensities of the sample image $\x_t$ and a noised NIR image $\y_t$ while $\x^{I_H}_t$ and $\y^{I_H}_t$  denote the high frequencies of the intensities respectively. 
+Here, the $\x^I_t$ and $\y^I_t$ denote the intensities of the sample image $\x_t$ and a noised NIR image $\y_t$ while $\x^{I_H}_t$ and $\y^{I_H}_t$  denote the high frequencies of the intensities respectively.
 
 \begin{align}
-   \mathcal{E}_I(\x_t, \y_0, t) &= \mathbb{E}_{\y_t \sim p(\y_t | \y_0)}\left[|| \x^I_t - \y^I_t ||^2\right] \label{eqn:energy-intensities}\\
-   \mathcal{E}_{I_H}(\x_t, \y_0, t) &= \mathbb{E}_{\y_t \sim p(\y_t | \y_0)}\left[|| \x^{I_H}_t - \y^{I_H}_t ||^2\right] \label{eqn:energy-high-freq-intensities}
+   \mathcal{E}_I(\x_t, \y_0, t)     & = \mathbb{E}_{\y_t \sim p(\y_t | \y_0)}\left[|| \x^I_t - \y^I_t ||^2\right] \label{eqn:energy-intensities}                   \\
+   \mathcal{E}_{I_H}(\x_t, \y_0, t) & = \mathbb{E}_{\y_t \sim p(\y_t | \y_0)}\left[|| \x^{I_H}_t - \y^{I_H}_t ||^2\right] \label{eqn:energy-high-freq-intensities}
 \end{align}
 
 
