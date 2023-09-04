@@ -437,6 +437,39 @@ It is only needed to calculate or approximate the score-function $\nabla_{\x_t} 
 \subsection{Correction-Guided Conditional Sampling}
 \label{sec:correction-guided-sampling}
 
+We consider \textit{correction-guided sampling} a specialized form of the conditional sampling as derived in \autoref{sec:conditional-sampling}.
+Conceptually each iteration we \textit{correct} the image after the sampling to be consistent with the condition property -- in our case the near-infrared image.
+Therefore, we now sample in each iteration a $\tilde{\x}_t \sim p_\theta(\tilde{\x}_t, \x_{t})$ as before, but use a correction function $f(\tilde{\x}_t, \ce)$ which ensures the condition property $\ce$.
+Leveraging this function, we obtain the corrected image $\x_t = f(\tilde{\x}_t, \ce)$, which is input for the next iteration. 
+
+This procedure is equivalent to using a conditional score function $\nabla_{\x_t}\log p_\theta(\ce | \x_{t})$ as in \autoref{eqn:correction-guided-sampling-score-function}.
+\begin{equation}
+   \label{eqn:correction-guided-sampling-score-function}
+   \nabla_{\x_t}\log p_\theta(\ce | \x_{t}) = \frac{\sqrt{\alpha_t}}{\beta_t}(f(\tilde{\x}_t, \ce) - \tilde{\x}_t) 
+\end{equation}
+
+We note that \textcite{ilvr} use a similar technique which they call iterative latent variable refinement, but they do not present this mathematical connection. 
+
+In \autoref{alg:sampling-conditional-correction-guided} we present our algorithm for correction-guided sampling.
+
+\begin{algorithm}[htp!]
+   \caption{Correction-Guided Conditional Sampling}
+   \label{alg:sampling-conditional-correction-guided}
+   \begin{algorithmic}
+      \Require A correction function $f$ ensuring the condition $\ce$ given a noised image $\x_t$.
+      \State $\x_T \sim \mathcal{N}(0, \mathbf{I})$
+      \For{$t = T, \dots, 1$}
+      \State $\mathbf{z} \sim \mathcal{N}(0, \mathbf{I})$ \algorithmicif\ $t > 0$, \algorithmicelse\ $\mathbf{z} = 0$
+      \State $\tilde{\x}_{t-1} = \frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_\theta(\x_t, t) \right) + \sigma_t \mathbf{z}$
+      \State $\x_{t-1} = f(\tilde{\x}_{t-1}, \ce)$
+      \EndFor
+      \Return $\x_0$
+   \end{algorithmic}
+\end{algorithm}
+
+For our concrete application context we derive two different formulations of the correction function $f(\tilde{\x}_t, \ce)$ and of the condition $\ce$ 
+for colorizing gray-scale (\autoref{sec:correction-guided-sampling-gray-scale-colorization}) and near-infrared (\autoref{sec:correction-guided-sampling-nir-colorization}) images. 
+
 \subsubsection{Gray-Scale Colorization}
 \label{sec:correction-guided-sampling-gray-scale-colorization}
 
