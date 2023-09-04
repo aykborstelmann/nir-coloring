@@ -411,13 +411,23 @@ separates the conditioning $p_\theta(\ce|\x_t)$ and the unconditional noise esti
                                                       & = -\frac{\bar{\epsilon}_\theta(\x_t, \ce, t)}{\sqrt{1 - \bar{\alpha}_t}}                                                                                                                          \\
       \\
       \Rightarrow \bar{\epsilon}_\theta(\x_t, \ce, t) & = \epsilon_\theta(\x_t, t) - \sqrt{1 - \bar{\alpha}_t} \nabla_{\x_t} \log p_\theta(\ce|\x_t)
-      \text{\todo{Double Check}}
+   \end{aligned}
+\end{equation}
+
+By using this new noise estimator $\bar{\epsilon}_\theta(\x_t, \ce, t)$, we can sample new images with the condition using \autoref{alg:sampling-unconditional}: 
+
+\begin{equation}
+   \begin{aligned}
+      \x_{t-1} &= \frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \bar{\epsilon}_\theta(\x_t, \ce, t) \right) + \sigma_t \mathbf{z} \\
+      &= \frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} (\epsilon_\theta(\x_t, t) - \sqrt{1 - \bar{\alpha}_t} \nabla_{\x_t} \log p_\theta(\ce|\x_t)) \right) + \sigma_t \mathbf{z} \\
+      &= \underbrace{\frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_\theta(\x_t, t) \right) + \sigma_t \mathbf{z}}_{\tilde{\x}_{t-1}} + \frac{\beta_t}{\sqrt{\alpha_t}} \nabla_{\x_t} \log p_\theta(\ce|\x_t) \\
+      &= \tilde{\x}_{t-1} + \frac{\beta_t}{\sqrt{\alpha_t}} \nabla_{\x_t} \log p_\theta(\ce|\x_t) \\
    \end{aligned}
 \end{equation}
 
 Therefore, it is possible to use a general purpose unconditional diffusion model and conditional sample with it.
 It is only needed to calculate or approximate the score-function $\nabla_{\x_t} \log p_\theta(\ce|\x_t)$ \parencite{diffusion-beats-gans}.
-\autoref{alg:sampling-conditional} shows how to conditional sampling is implemented.
+\autoref{alg:sampling-conditional} show how conditional sampling can be implemented.
 
 \begin{algorithm}[htp!]
    \caption{Conditional Sampling}
@@ -427,8 +437,8 @@ It is only needed to calculate or approximate the score-function $\nabla_{\x_t} 
       \State $\x_T \sim \mathcal{N}(0, \mathbf{I})$
       \For{$t = T, \dots, 1$}
       \State $\mathbf{z} \sim \mathcal{N}(0, \mathbf{I})$ \algorithmicif\ $t > 0$, \algorithmicelse\ $\mathbf{z} = 0$
-      \State $\bar{\epsilon}_{\theta, t} = \epsilon_\theta(\x_t, t) - \sqrt{1 - \bar{\alpha}_t} \nabla_{\x_t} \log p_\theta(\ce|\x_t)$
-      \State $\x_{t-1} = \frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \bar{\epsilon}_{\theta, t} \right) + \sigma_t \mathbf{z}$
+      \State $\tilde{\x}_{t-1} = \frac{1}{\sqrt{\alpha_t}} \left(\x_t - \frac{\beta_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_\theta(\x_t, t) \right) + \sigma_t \mathbf{z}$
+      \State $\x_{t-1} = \tilde{\x}_{t-1} + \frac{\beta_t}{\sqrt{\alpha_t}} \nabla_{\x_t} \log p_\theta(\ce|\x_t)$
       \EndFor
       \Return $\x_0$
    \end{algorithmic}
