@@ -350,6 +350,7 @@ By this the training algorithm for this \textit{unconditional} can be derived as
 
 Sampling with this unconditional model (\autoref{alg:sampling-unconditional}) then uses the reparameterization of the Gaussian distribution (\autoref{eqn:reverse-process})
 and the parameterization of the mean given an $\epsilon$ predicted by the model (\autoref{eqn:mu-theta-parameterization}) \parencite{ddpm}.
+This process is also visualized in \autoref{fig:reverse-diffusion-process}.
 
 
 \begin{algorithm}[htp!]
@@ -365,7 +366,17 @@ and the parameterization of the mean given an $\epsilon$ predicted by the model 
    \end{algorithmic}
 \end{algorithm}
 
-\todo{Visualize Sampling Procedure}
+\begin{figure}[htp!]
+   \centering
+   \includegraphics[width=.8\textwidth]{gfx/Unconditional-Sampling.pdf}
+   \caption{
+      \textbf{Reverse Diffusion Process.}
+      Starting from $\x_T$ sampled from a prior distribution, we gradually remove noise from the image using $p_\theta(\x_{t-1}|\x_t)$ until $\x_0$ is reached.
+      $q(\x_t | \x_{t-1})$ denotes the forward diffusion process and is the counterpart to $p_\theta(\x_{t-1}|\x_t)$, used for training and theoretical derivation \parencite{ddpm}.
+   }
+   \label{fig:reverse-diffusion-process}
+\end{figure}
+
 
 \todo{Structural comparison with CycleGAN}
 
@@ -455,7 +466,7 @@ Leveraging this function, we obtain the corrected image $\x_t = f(\tilde{\x}_t, 
 This procedure is equivalent to using a conditional score function $\nabla_{\x_t}\log p_\theta(\ce | \x_{t})$ as in \autoref{eqn:correction-guided-sampling-score-function}.
 \begin{equation}
    \label{eqn:correction-guided-sampling-score-function}
-   \nabla_{\x_t}\log p_\theta(\ce | \x_{t}) = \frac{\sqrt{\alpha_t}}{\beta_t}(f(\tilde{\x}_t, \ce) - \tilde{\x}_t) 
+   \nabla_{\x_t}\log p_\theta(\ce | \x_{t}) = \frac{\sqrt{\alpha_t}}{\beta_t}(f(\tilde{\x}_{t-1}, \ce) - \tilde{\x}_t) 
 \end{equation}
 
 We note that \textcite{ilvr} use a similar technique which they call iterative latent variable refinement, but they do not present this mathematical connection. 
