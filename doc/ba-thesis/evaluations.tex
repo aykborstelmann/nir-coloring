@@ -16,9 +16,20 @@ It empirically estimates how the human eye perceives images for a set of images 
 First, a pre-trained InceptionV3 model evaluates each image of the image set and the activation of the last layer is considered the "human perception approximation".
 Then for all activation vectors of the evaluated images in the images set, a multidimensional Gaussian is fitted over those activation vectors.
 This is done for two image sets, and later the two Gaussians are compared using the Fréchet distance \parencite{ttur}.
+In \autoref{fig:fid} the mechanism is visualized. 
 Intuitively, if the generated images are realistic, the statistics of features in a classification network should be similar to the real ones.
 
-\todo{Add figure visualizing FID}
+\begin{figure}[htp!]
+    \centering
+    \includegraphics[width=.9\textwidth]{gfx/FID.pdf}
+    \caption{
+        \textbf{Fréchet Inception Distance}.
+        For each image set a pretrained inception v3 model is evaluated. 
+        Mean $\mu$ and variance $\Sigma$ are calculated for the activations of the last layer.
+        Using the Fréchet Distance a distance of between both image sets is obtained \parencite{ttur}.
+    }
+    \label{fig:fid}
+\end{figure}
 
 \label{sec:evaluate-fid}
 \todo{Discuss usage of FID}
