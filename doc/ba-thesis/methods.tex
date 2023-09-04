@@ -460,13 +460,16 @@ It is only needed to calculate or approximate the score-function $\nabla_{\x_t} 
 
 We consider \textit{correction-guided sampling} a specialized form of the conditional sampling as derived in \autoref{sec:conditional-sampling}.
 Conceptually each iteration we \textit{correct} the image after the sampling to be consistent with the condition property -- in our case the near-infrared image.
-Therefore, we now sample in each iteration a $\tilde{\x}_t \sim p_\theta(\tilde{\x}_t, \x_{t})$ as before, but use a correction function $f(\tilde{\x}_t, \ce)$ which ensures the condition property $\ce$.
-Leveraging this function, we obtain the corrected image $\x_t = f(\tilde{\x}_t, \ce)$, which is input for the next iteration. 
+Therefore, we now sample in each iteration a $\tilde{\x}_{t-1} \sim p_\theta(\tilde{\x}_{t-1}| \x_{t})$ as before, but use a correction function $f(\tilde{\x}_{t-1}, \ce)$ which ensures the condition property $\ce$.
+Leveraging this function, we obtain the corrected image $\x_{t-1} = f(\tilde{\x}_{t-1}, \ce)$, which is input for the next iteration. 
 
 This procedure is equivalent to using a conditional score function $\nabla_{\x_t}\log p_\theta(\ce | \x_{t})$ as in \autoref{eqn:correction-guided-sampling-score-function}.
+Note that we use different indices on the score function and the correction term. 
+Even though originally this is derived using $\x_{t}$, we correct using the newest generated image $\tilde{\x}_{t-1}$.  
+
 \begin{equation}
    \label{eqn:correction-guided-sampling-score-function}
-   \nabla_{\x_t}\log p_\theta(\ce | \x_{t}) = \frac{\sqrt{\alpha_t}}{\beta_t}(f(\tilde{\x}_{t-1}, \ce) - \tilde{\x}_t) 
+   \nabla_{\x_t}\log p_\theta(\ce | \x_{t}) = \frac{\sqrt{\alpha_t}}{\beta_t}(f(\tilde{\x}_{t-1}, \ce) - \tilde{\x}_{t-1}) 
 \end{equation}
 
 We note that \textcite{ilvr} use a similar technique which they call iterative latent variable refinement, but they do not present this mathematical connection. 
