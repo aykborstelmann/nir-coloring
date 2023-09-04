@@ -198,7 +198,7 @@ Through the skip connection the architecture that can learn to "choose" how deep
 \begin{figure}[h]
    \includegraphics[width=\textwidth]{gfx/CycleGAN-Unet.pdf}
    \caption{
-      U-Net generator $G$ used in CycleGAN \parencite{unet,mehri}
+      \textbf{U-Net generator $G$ used in CycleGAN} \parencite{unet,mehri}.
    }
    \label{fig:unet}
 \end{figure}
@@ -525,7 +525,13 @@ We implement this colorization approach according to \autoref{alg:sampling-gray-
 
 \begin{figure}
    \includegraphics[width=\textwidth]{gfx/Gray-Scale-Colorization-Sampling.pdf}
-   \caption{Visualization of \autoref{alg:sampling-gray-scale-colorization}.}
+   \caption{
+      \textbf{Iteration Schema for Colorization using Intensity Replacement}.
+      First approximate $\tilde{\x}_{t-1}$ and noised input image are $\y_{t-1}$ sampled with $p_\theta(\x_{t-1}|\x_t)$ and $q(\y_{t-1}|\y_0)$ respectively.
+      Both are then decomposed into intensity and remaining dimensions. 
+      Intensity of the noised input image $\y_{t-1}^I$ is combined with color of the approximate sample $\tilde{\x}_{t-1}^R$ and transformed back into regular RGB domain, obtaining $\x_{t-1}$ (\autoref{alg:sampling-gray-scale-colorization})
+      $C$ denotes decomposition function into intensity and remaining dimensions.
+   }
    \label{fig:sampling-gray-scale-colorization}
 \end{figure}
 
@@ -654,7 +660,15 @@ and finally compare it with CycleGAN in \autoref{sec:diffusion-vs-cyclegan}.
 
 \begin{figure}
    \includegraphics[width=\textwidth]{gfx/NIR-Colorization-Sampling.pdf}
-   \caption{Visualization of \autoref{alg:sampling-nir-colorization}.}
+   \caption{
+      \textbf{Iteration Schema for Colorization using High-Frequency Intensity Replacement}.
+      First approximate $\tilde{\x}_{t-1}$ and noised input image are $\y_{t-1}$ sampled with $p_\theta(\x_{t-1}|\x_t)$ and $q(\y_{t-1}|\y_0)$ respectively.
+      Both are then decomposed into intensity and remaining dimensions. 
+      Of both intensity dimensions $\y_{t-1}^I$ and $\tilde{\x}_{t-1}^I$ high- and low-frequency are obtained.  
+      High-frequency intensities of the noised input image $\y_{t-1}^{I_H}$ are combined with low-frequency intensity of the approximate sample $\tilde{\x}_{t-1}^{I_H}$ to form the resulting intensity $\x_{t-1}^{I}$.
+      Finally, the resulting intensity $\x_{t-1}^{I}$ is merged with color of the approximate sample $\tilde{\x}_{t-1}^R$ and transformed back into regular RGB domain, obtaining $\x_{t-1}$ (\autoref{alg:sampling-nir-colorization}).
+      $C$ denotes decomposition function into intensity and remaining dimensions while $G$ denotes decomposition in low- and high-frequencies.
+   }
    \label{fig:sampling-nir-colorization}
 \end{figure}
 

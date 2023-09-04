@@ -11,12 +11,13 @@ Due to the unpaired setting, in the quantitative evaluation classic solutions, s
 comparing classification results using an off-the-shelf network, are well known to quantitatively assess the quality of image translation.
 
 \subsubsection*{FID}
+\label{sec:fid}
 To measure how close the generated images are to the real images concerning human perception, the \textit{Fréchet Inception Distance} (FID) \parencite{ttur} is a commonly used metric.
 It empirically estimates how the human eye perceives images for a set of images and computes the distance between two such set representations.
 First, a pre-trained InceptionV3 model evaluates each image of the image set and the activation of the last layer is considered the "human perception approximation".
 Then for all activation vectors of the evaluated images in the images set, a multidimensional Gaussian is fitted over those activation vectors.
 This is done for two image sets, and later the two Gaussians are compared using the Fréchet distance \parencite{ttur}.
-In \autoref{fig:fid} the mechanism is visualized. 
+In \autoref{fig:fid} the mechanism is visualized.
 Intuitively, if the generated images are realistic, the statistics of features in a classification network should be similar to the real ones.
 
 \begin{figure}[htp!]
@@ -24,7 +25,7 @@ Intuitively, if the generated images are realistic, the statistics of features i
     \includegraphics[width=.9\textwidth]{gfx/FID.pdf}
     \caption{
         \textbf{Fréchet Inception Distance}.
-        For each image set a pretrained inception v3 model is evaluated. 
+        For each image set a pretrained inception v3 model is evaluated.
         Mean $\mu$ and variance $\Sigma$ are calculated for the activations of the last layer.
         Using the Fréchet Distance a distance of between both image sets is obtained \parencite{ttur}.
     }
@@ -70,7 +71,7 @@ As we will show, both the diffusion model and CycleGAN perform significantly wor
 
 We train both CycleGAN and an unconditional diffusion model (acoording to \autoref{sec:methods-cycle-gan} and \autoref{sec:diffusion-prerequisites}) with a subset of the Caltech Camera Traps dataset \parencite{caltech} where \textit{randomly} from NIR and RGB images are sampled.
 Secondly the same training is performed but with a dataset subset of the Serengeti dataset \parencite{serengeti} where particularly \textit{only night} images from the NIR and RGB domain are chosen.
-For the diffusion model, 
+For the diffusion model,
 we achieve a FID of $100.22$ for the unconditional image generation with the \textit{random} dataset and a FID of $95.73$ with the \textit{only night} (see \autoref{sec:unconditional-diffusion-sampling-evaluation} for more information).
 We consider both good results for such diverse datasets and observe that the \textit{random} dataset is more difficult to learn due to other factors.
 Additionally, we provide some qualitative results for the unconditional using the model trained for the \textit{random} dataset in \autoref{fig:qualitative-evaluation-unconditional-sampling-caltech},
@@ -92,7 +93,7 @@ Similar results for the \textit{only-night} dataset can be found in \autoref{fig
         \end{tabularx}
         \caption{
             \textbf{Qualitative Evaluation.}
-            For each CycleGAN and the diffusion model and for each training dataset consisting of random selection of images and only night images, 
+            For each CycleGAN and the diffusion model and for each training dataset consisting of random selection of images and only night images,
             generated samples are shown.
         }
         \label{fig:hallucation-night-day-qual}
@@ -109,13 +110,13 @@ Similar results for the \textit{only-night} dataset can be found in \autoref{fig
                                        & Only Night    & \textbf{96.00}   \\
         \end{tabular}
         \caption{
-            \textbf{Quantitative Evaluation.} 
-            For each CycleGAN and the diffusion model and for each training dataset consisting of random selection of images and only night images the FID between the generated images and the respective test dataset. 
+            \textbf{Quantitative Evaluation.}
+            For each CycleGAN and the diffusion model and for each training dataset consisting of random selection of images and only night images the FID between the generated images and the respective test dataset.
         }
         \label{fig:hallucation-night-day-quan}
     \end{subfigure}
     \caption{
-        Results of both CycleGAN and Diffusion when trained on a dataset consisting of \textit{only-night} images or resepectivly a \textit{random} selection of images. 
+        Results of both CycleGAN and Diffusion when trained on a dataset consisting of \textit{only-night} images or resepectivly a \textit{random} selection of images.
         The \textit{only-night}-images dataset is obtained from the Caltech Camera Traps dataset \parencite{caltech} and the \textit{random}-images dataset is obtained from the Snapshot Serengeti dataset \parencite{serengeti}.
     }
     \label{fig:hallucincation-night-day}
@@ -124,36 +125,36 @@ Similar results for the \textit{only-night} dataset can be found in \autoref{fig
 Starting with those four trained models we evaluate them using the respective test datasets according.
 For the diffusion model we sample by replacing the high-frequencies of the intensity, as explained in \autoref{sec:correction-guided-sampling-nir-colorization} and evaluated in \autoref{sec:high-pass-filter-evaluation}.
 We first conduct a qualitative evaluation of these in \autoref{fig:hallucation-night-day-qual}.
-As visible, both CycleGAN and the diffusion model trained and evaluated on \textit{random} images perform much worse in \textit{content-preservation} than their equivalents trained on \textit{only-night} images. 
+As visible, both CycleGAN and the diffusion model trained and evaluated on \textit{random} images perform much worse in \textit{content-preservation} than their equivalents trained on \textit{only-night} images.
 When given dark nighttime near-infrared images, both produce features of day images, e.g., like avoiding dark sky or brightening the image.
 Both model produce such features unnaturally.
-Quantitative those weaknesses are also observable, we extract from \autoref{fig:hallucation-night-day-quan} that for CycleGAN the FID is 16.11 points and for the diffusion model 45.77 FID worse. 
+Quantitative those weaknesses are also observable, we extract from \autoref{fig:hallucation-night-day-quan} that for CycleGAN the FID is 16.11 points and for the diffusion model 45.77 FID worse.
 
 Commonly, camera traps capture near-infrared images at night and visible-light images during the day.
 Therefore, sampling random NIR and RGB images results in near-infrared images mostly from the night, while the colored images are mostly from the day.
 
-CycleGAN has its main goal of producing an image the discriminator rates as realistic. 
+CycleGAN has its main goal of producing an image the discriminator rates as realistic.
 Therefore, it hallucinates daylight features, which it learned are common for images from the dataset.
-As the FID does not actually rate pictures according to their realism, but according to their distance to the target domain, 
+As the FID does not actually rate pictures according to their realism, but according to their distance to the target domain,
 it does not necessarily rate hallucinations which do not look realistic for humans negatively.
 Additionally, for CycleGAN, content-preservation is only punished by the cycle-consistency-loss, if the inverse-generator cannot recover the original image.
 
-The diffusion model on the other hand has already proven to generate realistic images when used for unconditional sampling (\autoref{fig:qualitative-evaluation-unconditional-sampling-caltech}). 
-But night images are rare in its learned distribution. 
-Thus, it tries to generate day time images. 
-Our sampling procedure however, only allows sampling of color and low-frequencies of the intensity (\autoref{sec:correction-guided-sampling-nir-colorization}). 
-The model therefore cannot create daytime features as CycleGAN can. 
-As a result, we see hallucination such as images with a blue or green tone for the background, 
+The diffusion model on the other hand has already proven to generate realistic images when used for unconditional sampling (\autoref{fig:qualitative-evaluation-unconditional-sampling-caltech}).
+But night images are rare in its learned distribution.
+Thus, it tries to generate day time images.
+Our sampling procedure however, only allows sampling of color and low-frequencies of the intensity (\autoref{sec:correction-guided-sampling-nir-colorization}).
+The model therefore cannot create daytime features as CycleGAN can.
+As a result, we see hallucination such as images with a blue or green tone for the background,
 but no details associated with these.
 Notice that for day near-infrared images as the middle image in \autoref{fig:hallucation-night-day-qual}, the model does not hallucinate.
-The FID again, is less effected by color changes than by differences in details and overall appearance. 
-Thus, the FID is much higher than CycleGAN's while we still observe hallucinations qualitatively. 
+The FID again, is less effected by color changes than by differences in details and overall appearance.
+Thus, the FID is much higher than CycleGAN's while we still observe hallucinations qualitatively.
 
-In other words, both CycleGAN and the diffusion model are lead to not only translating near-infrared images to visible-light / colored images, 
-but also to translate from night to day. Both models fail due to different reasons in doing that.  
+In other words, both CycleGAN and the diffusion model are lead to not only translating near-infrared images to visible-light / colored images,
+but also to translate from night to day. Both models fail due to different reasons in doing that.
 
 We solve this problem, as described in \autoref{sec:subset-generation} in only providing night images for training.
-As near-infrared cameras' main use case in camera traps, is to take night images we find this a reasonable decision. 
+As near-infrared cameras' main use case in camera traps, is to take night images we find this a reasonable decision.
 When applying this to the CCT dataset \parencite{caltech} this is not actionable, because it contains too less colored night images.
 Snapshot Serengeti, on the other hand, used two types of cameras during the survey:
 Scoutgard's SG565 cameras which produce RGB \textbf{night} images using an \textit{incandescent} flash and
@@ -173,7 +174,7 @@ First we evaluate the unconditional sampling of the diffusion model and therefor
         Unconditional Diffusion & 95.73
     \end{tabular}
     \caption{
-        \textbf{Quantitative Evaluation.} CycleGAN and the diffusion model trained on Snapshot Serengeti \parencite{serengeti} containing only night NIR and RGB images.
+        \textbf{Quantitative Evaluation of Unconditional Diffusion Sampling.} CycleGAN and the diffusion model trained on Snapshot Serengeti \parencite{serengeti} containing only night NIR and RGB images.
         Comparing the FID calculated between the test dataset and the generated images.
     }
     \label{fig:quantitative-evaluation-unconditional-sampling}
@@ -189,7 +190,7 @@ First we evaluate the unconditional sampling of the diffusion model and therefor
         \includegraphics{gfx/unconditional-diffusion-sampling-qual/rgb_S2_B05_R2_IMAG0016.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/cyclegan_S2_B06_R3_PICT3848_fake.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/diffusion_S2_B07_R2_PICT0277.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/rgb_S2_B05_R3_IMAG1018.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/cyclegan_S2_B07_R1_PICT3274_fake.png} & \includegraphics{gfx/unconditional-diffusion-sampling-qual/diffusion_S2_B07_R1_PICT3274.png}
     \end{tabularx}
     \caption{
-        \textbf{Qualitative Evaluation.} Left to right: Sample image from the RGB domain of the Serengeti test dataset \parencite{serengeti},
+        \textbf{Qualitative Evaluation of Unconditional Diffusion Sampling.} Left to right: Sample image from the RGB domain of the Serengeti test dataset \parencite{serengeti},
         sample produced by CycleGAN \parencite{mehri} and an unconditional sample produced by the diffusion model \parencite{diffusion-beats-gans}.
     }
     \label{fig:qualitative-evaluation-unconditional-sampling}
@@ -235,7 +236,13 @@ This observation is also quantitatively reflected, the FID of the loss-guided sa
         \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/nir_S2_B06_R3_PICT3848.jpg} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-correction-guided_S2_B06_R3_PICT3848.png} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-loss-guided_S2_B06_R3_PICT3848.png} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/nir_S2_B07_R1_PICT3274.jpg} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-correction-guided_S2_B07_R1_PICT3274.png} & \includegraphics{gfx/diffusion-sampling-loss-guided-vs-correction-guided-qual/diffusion-loss-guided_S2_B07_R1_PICT3274.png}
     \end{tabularx}
     \caption{
-        \todo{Add Caption}
+        \textbf{Qualitative Comparison between Correction-Guided- and Energy-Guided Sampling}.
+        From left to right:
+        Near-infrared image from Snapshot Serengeti dataset \parencite{serengeti},
+        correction-guided sample obtained according to \autoref{sec:correction-guided-sampling-gray-scale-colorization}
+        and
+        energy-guided sample obtained according to \autoref{sec:energy-guided-sampling}.
+        \todo{Replace loss-guided with energy guided}
     }
     \label{fig:qualitative-evaluation-loss-guided-vs-correction-guided}
 \end{figure}
@@ -246,10 +253,12 @@ This observation is also quantitatively reflected, the FID of the loss-guided sa
         Model             & FID  $\downarrow$ \\
         \hline\hline
         Correction-Guided & 105.00            \\
-        Loss-Guided       & 128.64
+        Energy-Guided     & 128.64
     \end{tabular}
     \caption{
-        \todo{Add Caption}
+        \textbf{Quantitative Comparison between Correction-Guided- and Energy-Guided Sampling}.
+        Both sampling strategies, correction-guided and energy-guided sampling is evaluated on the Snapshot Serengeti dataset \parencite{serengeti}.
+        The FID (\autoref{sec:fid}) \parencite{ttur} is calculated by comparing the test dataset and the set of generated samples.
     }
     \label{fig:quantitative-evaluation-loss-guided-vs-correction-guided}
 \end{table}
@@ -277,8 +286,12 @@ this idea empirically.
         \includegraphics{gfx/diffusion-sampling-intensity-qual/nir_S2_B06_R3_PICT3848.jpg} & \includegraphics{gfx/diffusion-sampling-intensity-qual/cyclegan_S2_B06_R3_PICT3848_fake.png} & \includegraphics{gfx/diffusion-sampling-intensity-qual/diffusion_S2_B06_R3_PICT3848.png} & \includegraphics{gfx/diffusion-sampling-intensity-qual/nir_S2_B07_R1_PICT3274.jpg} & \includegraphics{gfx/diffusion-sampling-intensity-qual/cyclegan_S2_B07_R1_PICT3274_fake.png} & \includegraphics{gfx/diffusion-sampling-intensity-qual/diffusion_S2_B07_R1_PICT3274.png}
     \end{tabularx}
     \caption{
-        \textbf{Qualitative Evaluation.} Left to right: Image from the NIR domain of the Serengeti test dataset \parencite{serengeti},
-        corresponding image generated by CycleGAN \parencite{mehri} and corresponding sample generated by our diffusion model approach.
+        \textbf{Qualitative Evaluation of Intensity Replacement Sampling.}
+        From left to right:
+        Near-infrared image from Snapshot Serengeti dataset \parencite{serengeti},
+        image generated by CycleGAN (\autoref{sec:methods-cycle-gan})\parencite{mehri}
+        and
+        sample obtained using intensity replacement as conditioning strategy according to \autoref{sec:correction-guided-sampling-gray-scale-colorization}.
     }
     \label{fig:qualitative-evaluation-intensity}
 \end{figure}
@@ -305,8 +318,9 @@ It is merely trained to produce invertible images.
         \textbf{Conditional Diffusion} \parencite{sbgm} & \textbf{105.00}
     \end{tabular}
     \caption{
-        \textbf{Quantitative Evaluation.} CycleGAN and the diffusion model trained on Snapshot Serengeti \parencite{serengeti} containing only night NIR and RGB images.
-        Comparing the FID calculated between the test dataset and the generated images.
+        \textbf{Quantitative Evaluation of Intensity Replacement Sampling.}
+        Samples of CycleGAN, the unconditional diffusion model and conditional diffusion model using intensity replacement sampling are generated.
+        The FID (\autoref{sec:fid}) \parencite{ttur} is calculated by comparing the test dataset and the set of generated samples.
     }
     \label{fig:qualitative-evaluation-full-high-pass}
 \end{table}
@@ -355,7 +369,12 @@ To investigate this, in \autoref{fig:qualitative-evaluation-cyclegan-conditional
         \includegraphics{gfx/conditional-with-cycle-gan-qual/nir_S2_B06_R3_PICT3848.jpg} & \includegraphics{gfx/conditional-with-cycle-gan-qual/cyclegan_S2_B06_R3_PICT3848_fake.png} & \includegraphics{gfx/conditional-with-cycle-gan-qual/diff_cycle_gan_S2_B06_R3_PICT3848_fake.png} & \includegraphics{gfx/conditional-with-cycle-gan-qual/nir_S2_B07_R1_PICT3274.jpg} & \includegraphics{gfx/conditional-with-cycle-gan-qual/cyclegan_S2_B07_R1_PICT3274_fake.png} & \includegraphics{gfx/conditional-with-cycle-gan-qual/diff_cycle_gan_S2_B07_R1_PICT3274_fake.png}
     \end{tabularx}
     \caption{
-        \todo{Add caption}
+        \textbf{Qualitative Evaluation of Intensity Replacement Sampling For Given Intensity.}
+        From left to right:
+        Near-infrared image from Snapshot Serengeti dataset \parencite{serengeti},
+        image generated by CycleGAN (\autoref{sec:methods-cycle-gan})\parencite{mehri}
+        and
+        sample obtained using intensity replacement as conditioning strategy, but with intensity from CycleGAN (\autoref{sec:correction-guided-sampling-gray-scale-colorization}).
     }
     \label{fig:qualitative-evaluation-cyclegan-conditional-sampling}
 \end{figure}
@@ -370,7 +389,9 @@ To investigate this, in \autoref{fig:qualitative-evaluation-cyclegan-conditional
         Diffusion with NIR Inputs                & 104.04
     \end{tabular}
     \caption{
-        \todo{Add caption}
+        \textbf{Quantitative Evaluation of Intensity Replacement Sampling.}
+        Samples are obtained from CycleGAN, the diffusion model given CycleGAN's intensities and the diffusion model with NIR inputs.
+        The FID (\autoref{sec:fid}) \parencite{ttur} is calculated by comparing the test dataset and the set of generated samples.
     }
     \label{fig:quantitative-evaluation-cyclegan-conditional-sampling}
 \end{table}
@@ -406,7 +427,12 @@ In \autoref{fig:qualitative-evaluation-full-high-pass} we evaluate the results o
         \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/nir_S2_B06_R3_PICT3848.jpg} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/full-pass_S2_B06_R3_PICT3848.png} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/high-pass_S2_B06_R3_PICT3848.png} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/nir_S2_B07_R1_PICT3274.jpg} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/full-pass_S2_B07_R1_PICT3274.png} & \includegraphics{gfx/diffusion-sampling-full-vs-high-pass-filter-qual/high-pass_S2_B07_R1_PICT3274.png}
     \end{tabularx}
     \caption{
-        \todo{Add caption}
+        \textbf{Qualitative Evaluation of High-Frequency Intensity Replacement.}
+        From left to right:
+        Near-infrared image from Snapshot Serengeti dataset \parencite{serengeti},
+        sample obtained using intensity replacement as conditioning strategy (\autoref{sec:correction-guided-sampling-gray-scale-colorization})
+        and
+        image generated using replacement of high-frequency intensities (\autoref{sec:correction-guided-sampling-nir-colorization}).
     }
     \label{fig:qualitative-evaluation-full-high-pass}
 \end{figure}
@@ -414,14 +440,16 @@ In \autoref{fig:qualitative-evaluation-full-high-pass} we evaluate the results o
 \begin{table}[htp!]
     \centering
     \begin{tabular}{c | c}
-        Strategy      & FID  $\downarrow$ \\
+        Strategy                             & FID  $\downarrow$ \\
         \hline\hline
-        Full-Pass     & 105.00            \\
-        High-Pass     & 95.49             \\
-        Unconditional & 96.02
+        Intensity Replacement                & 105.00            \\
+        High-Frequency Intensity Replacement & 95.49             \\
+        Unconditional                        & 96.02
     \end{tabular}
     \caption{
-        \todo{Add caption}
+        \textbf{Quantitative Evaluation of High-Frequency Intensity Replacement Sampling.}
+        Images are generated using intensity replacement sampling, high-frequency intensity replacement and unconditionally.
+        The FID (\autoref{sec:fid}) \parencite{ttur} is calculated by comparing the test dataset and the set of generated samples.
     }
     \label{fig:quantitative-evaluation-full-high-pass}
 \end{table}
@@ -454,7 +482,11 @@ We visualize this effect in \autoref{fig:low-and-high-freq-effects-of-sigma}.
         \begin{sideways}\makecell{High-\\Frequencies}\end{sideways} & \includegraphics{gfx/low-high-freq-effects-of-sigma/high_freq_1.png} & \includegraphics{gfx/low-high-freq-effects-of-sigma/high_freq_5.png} & \includegraphics{gfx/low-high-freq-effects-of-sigma/high_freq_10.png} \\
     \end{tabularx}
 
-    \caption{Visualization of different $\sigma$s}
+    \caption{
+        \textbf{Influence of $\mathbf{\sigma}$ to low- and high-frequencies}.
+        Top row: Low Frequencies parts of image, bottom row: high-frequency part of image.
+        From left to right: Decomposition into low- and high frequencies according to \autoref{sec:correction-guided-sampling-nir-colorization} for $\sigma=1$, $\sigma=5$ and $\sigma=10$.
+    }
     \label{fig:low-and-high-freq-effects-of-sigma}
 \end{figure}
 
@@ -470,7 +502,7 @@ We evaluate with the same seed, with the intention to have as few influence of r
         \input{gfx/influence-of-sigma.pgf}
     \end{center}
     \caption{
-        Influence of hyperparameter $\sigma$ to the FID.
+        \textbf{Influence of hyperparameter $\sigma$ to the FID.}
         On the x-axis the FID (lower is better) and on the y-axis the $\sigma$ for the model.
         \textcolor{ub-blue}{Solid blue line} high frequency replacement sampling with FID dependent on $\sigma$ (\autoref{sec:correction-guided-sampling-nir-colorization}),
         \textcolor{ub-blue}{dotted blue line} intensity replacement sampling FID (\autoref{sec:correction-guided-sampling-gray-scale-colorization}),
@@ -526,7 +558,12 @@ We compare performances of our trained CycleGAN \autoref{sec:methods-cycle-gan} 
         \includegraphics{gfx/conditional-diffusion-sampling-qual/nir_S2_B06_R3_PICT3848.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-qual/cyclegan_S2_B06_R3_PICT3848_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/diffusion_S2_B06_R3_PICT3848.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/nir_S2_B07_R1_PICT3274.jpg} & \includegraphics{gfx/conditional-diffusion-sampling-qual/cyclegan_S2_B07_R1_PICT3274_fake.png} & \includegraphics{gfx/conditional-diffusion-sampling-qual/diffusion_S2_B07_R1_PICT3274.png}
     \end{tabularx}
     \caption{
-        \todo{Add caption}
+        \textbf{Qualitative Comparison of CycleGAN and Diffusion NIR Colorization}.
+        From left to right:
+        Near-infrared image from Snapshot Serengeti dataset \parencite{serengeti},
+        sample obtained by CycleGAN given the NIR image (\autoref{sec:methods-cycle-gan}) \parencite{mehri}
+        and
+        image generated using replacement of high-frequency intensities (\autoref{sec:correction-guided-sampling-nir-colorization}).
     }
     \label{fig:qualitative-evaluation-conditional-sampling}
 \end{figure}
@@ -548,7 +585,9 @@ As a small proportion of the training and test dataset also contains images whil
         \begin{sideways}Diffusion\end{sideways} & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/diffusion_S2_C07_R3_PICT0462.png} & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/diffusion_S2_G13_R1_PICT0332.png} & \includegraphics{gfx/conditional-diffusion-sampling-hallucinations-qual/diffusion_S2_T11_R2_PICT0208.png}
     \end{tabularx}
     \caption{
-        \todo{Add caption}
+        \textbf{Examples of Hallucinations by the Diffusion Model Sampling}.
+        Top row: Given near-infrared images from the Snapshot Serengeti dataset \parencite{serengeti}
+        and bottom row: Samples produced by the diffusion model by sampling zsing replacement of high-frequency intensities (\autoref{sec:correction-guided-sampling-nir-colorization}).
     }
     \label{fig:qualitative-evaluation-conditional-sampling-hallucinations}
 \end{figure}
