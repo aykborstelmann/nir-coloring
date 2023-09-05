@@ -270,11 +270,35 @@ This observation is also quantitatively reflected, the FID of the loss-guided sa
 \section{Conditioning the Near-Infrared}
 \subsection{NIR as Intensity Approximation}
 \label{sec:nir-as-intensity-approximation-evaluation}
-\Textcite{sbgm} already suggested colorization methods using diffusion models.
-Although in comparison visible light, near-infrared light has different reflection properties,
-we could ignore this property and assume the NIR intensity to be a good approximation of the visual light's intensity.
-Therefore, we start by implementing colorization as \autoref{sec:correction-guided-sampling-gray-scale-colorization} and evaluate
-this idea empirically.
+Physically near-infrared light is electromagnetic radiation with wavelengths between $0.75$ µm and $1.4$ µm, while light from the visible spectrum lays in the range of $700$nm - $1$mm.
+It is a property of the object which wavelength it reflects and which it absorbs.
+Therefore, objects might reflect near-infared strongly leading to high intensities for the observer while absorbing more of the visible light leading to a low intensity for the observer.
+In \autoref{fig:diff-nir-and-visible-light-exampels} we show some direct comparison between intensity of colored images (gray-scale) and near-infrared images.
+As visible, particular for vegetation (last row) higher reflectance of near-infrared light in comparison to visible light occurs.  
+
+
+\begin{figure}[htp!]
+    \centering
+    \setkeys{Gin}{width=1\linewidth}
+    \begin{tabularx}{.8\textwidth}{Y Y Y}
+        Colored                                         & Gray-Scale                                       & Near-Infrared                                   \\
+        \includegraphics{gfx/nir-vis-diff/0019_rgb.png} & \includegraphics{gfx/nir-vis-diff/0019_gray.png} & \includegraphics{gfx/nir-vis-diff/0019_nir.png} \\
+        \includegraphics{gfx/nir-vis-diff/0031_rgb.png} & \includegraphics{gfx/nir-vis-diff/0031_gray.png} & \includegraphics{gfx/nir-vis-diff/0031_nir.png}
+    \end{tabularx}
+    \caption{
+        \textbf{Qualitative Comparison between Near-Infrared and Visible Light Images}.
+        Left column: Regular colored image, middle column: intensity / grayscale by averaging the 3 color channels, right column: near-infrared image.
+        All images obtained from a dataset introduced by \textcite{nir-rgb-pair-dataset} which consists of paired near-infrared and colored images.
+    }
+    \label{fig:diff-nir-and-visible-light-exampels}
+\end{figure}
+
+
+The main application context for near-infrared colorization in wild life monitoring lies in colorizing night images. 
+In night images only a limited cone of illuminating light is available and therefore background such as vegetation is less visible.
+Thus, we argue, we can consider ignoring the physical difference between near-infrared and visible light and use the near-infrared images as approximation of the intensity.
+\Textcite{sbgm} provided a gray-scale colorization method using diffusion models. 
+We evaluate our approximation for colorizing near-infrared images by applying this algorithm for gray-scale colorization (\autoref{sec:correction-guided-sampling-gray-scale-colorization}).
 
 \begin{figure}[htp!]
     \centering
