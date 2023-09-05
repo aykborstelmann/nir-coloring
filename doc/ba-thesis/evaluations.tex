@@ -317,11 +317,11 @@ We evaluate our approximation for colorizing near-infrared images by applying th
         and
         sample obtained using intensity replacement as conditioning strategy according to \autoref{sec:correction-guided-sampling-gray-scale-colorization}.
     }
-    \label{fig:qualitative-evaluation-intensity}
+    \label{fig:qualitative-evaluation-intensity-replacment-cycle-gan}
 \end{figure}
 
-In \autoref{fig:qualitative-evaluation-intensity} we show evaluation results of this approach.
-Qualitatively we can observe those generated images are faithful to the input image (\autoref{fig:qualitative-evaluation-intensity}).
+In \autoref{fig:qualitative-evaluation-intensity-replacment-cycle-gan} we show evaluation results of this approach.
+Qualitatively we can observe those generated images are faithful to the input image (\autoref{fig:qualitative-evaluation-intensity-replacment-cycle-gan}).
 It is to be mentioned that faithfulness to the input image is not a quality learned by the network, but a design choice of the sampling procedure.
 Most noteworthy is that the colors estimated by the diffusion model appear realistic.
 Qualitative weaknesses in the colorization can be observed when analyzing the zebra image:
@@ -346,11 +346,11 @@ It is merely trained to produce invertible images.
         Samples of CycleGAN, the unconditional diffusion model and conditional diffusion model using intensity replacement sampling are generated.
         The FID (\autoref{sec:fid}) \parencite{ttur} is calculated by comparing the test dataset and the set of generated samples.
     }
-    \label{fig:qualitative-evaluation-full-high-pass}
+    \label{fig:quantitative-evaluation-intensity-replacment-cycle-gan}
 \end{table}
 
 
-Similar to the minor qualitative weakness, we also observe the FID of this naive approach to be $6.9$ FID points worse than CycleGAN.
+Similar to the minor qualitative weakness, we also observe the FID of this naive approach to be $6.9$ FID points worse than CycleGAN (\autoref{fig:quantitative-evaluation-intensity-replacment-cycle-gan}).
 Additionally, we see a gap between the sampling the unconditional diffusion model produces our method according to \Citeauthor*{sbgm} of $8.97$ FID points \parencite{sbgm}.
 This indicates that this method is too restrictive to allow competitive image generation.
 
@@ -483,10 +483,14 @@ As expected the diffusion now using the high-pass filter can manipulate the illu
 For example, we observe for left top image now, that not only the fox itself but also the environment has an orange-lighting as typically found in the training dataset.
 This reduction in restriction also positively influences the quantitative measurements:
 This method achieves a FID of $95.49$ which is even $0.53$ FID points better than the unconditional sampling (\autoref{fig:quantitative-evaluation-full-high-pass}).
-
 \todo{Resolve conflict to statement: "unconditional sampling is always the best" }
 
-\todo{Discuss the qualitative negative points $\rightarrow$ hallucinations}
+Apart from \autoref{fig:qualitative-evaluation-full-high-pass}, we observe some few examples of hallucination using this method. 
+In \autoref{fig:qualitative-evaluation-conditional-sampling-hallucinations} we present them. 
+As visible, the network seemingly generated colors and intensities of sky. 
+The network has the freedom to sample low-frequencies and uses that to generate sky, which it is also familiar with from training.
+In contrast, the sampling strategy of replacing intensity does not suffer from that effect. 
+We observe that these hallucinations are also dependent on the hyperparameter $\sigma$, discussed in \autoref{sec:influence-of-sigma-evaluation}.
 
 \subsection{Influence of Hyperparameter Sigma}
 \label{sec:influence-of-sigma-evaluation}
