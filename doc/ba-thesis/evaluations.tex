@@ -273,11 +273,35 @@ This observation is also quantitatively reflected, the FID of the loss-guided sa
 \section{Conditioning the Near-Infrared}
 \subsection{NIR as Intensity Approximation}
 \label{sec:nir-as-intensity-approximation-evaluation}
-\Textcite{sbgm} already suggested colorization methods using diffusion models.
-Although in comparison visible light, near-infrared light has different reflection properties,
-we could ignore this property and assume the NIR intensity to be a good approximation of the visual light's intensity.
-Therefore, we start by implementing colorization as \autoref{sec:correction-guided-sampling-gray-scale-colorization} and evaluate
-this idea empirically.
+Physically near-infrared light is electromagnetic radiation with wavelengths between $0.75$ µm and $1.4$ µm, while light from the visible spectrum lays in the range of $700$nm - $1$mm.
+It is a property of the object which wavelength it reflects and which it absorbs.
+Therefore, objects might reflect near-infared strongly leading to high intensities for the observer while absorbing more of the visible light leading to a low intensity for the observer.
+In \autoref{fig:diff-nir-and-visible-light-exampels} we show some direct comparison between intensity of colored images (gray-scale) and near-infrared images.
+As visible, particular for vegetation (last row) higher reflectance of near-infrared light in comparison to visible light occurs.  
+
+
+\begin{figure}[htp!]
+    \centering
+    \setkeys{Gin}{width=1\linewidth}
+    \begin{tabularx}{.8\textwidth}{Y Y Y}
+        Colored                                         & Gray-Scale                                       & Near-Infrared                                   \\
+        \includegraphics{gfx/nir-vis-diff/0019_rgb.png} & \includegraphics{gfx/nir-vis-diff/0019_gray.png} & \includegraphics{gfx/nir-vis-diff/0019_nir.png} \\
+        \includegraphics{gfx/nir-vis-diff/0031_rgb.png} & \includegraphics{gfx/nir-vis-diff/0031_gray.png} & \includegraphics{gfx/nir-vis-diff/0031_nir.png}
+    \end{tabularx}
+    \caption{
+        \textbf{Qualitative Comparison between Near-Infrared and Visible Light Images}.
+        Left column: Regular colored image, middle column: intensity / grayscale by averaging the 3 color channels, right column: near-infrared image.
+        All images obtained from a dataset introduced by \textcite{nir-rgb-pair-dataset} which consists of paired near-infrared and colored images.
+    }
+    \label{fig:diff-nir-and-visible-light-exampels}
+\end{figure}
+
+
+The main application context for near-infrared colorization in wild life monitoring lies in colorizing night images. 
+In night images only a limited cone of illuminating light is available and therefore background such as vegetation is less visible.
+Thus, we argue, we can consider ignoring the physical difference between near-infrared and visible light and use the near-infrared images as approximation of the intensity.
+\Textcite{sbgm} provided a gray-scale colorization method using diffusion models. 
+We evaluate our approximation for colorizing near-infrared images by applying this algorithm for gray-scale colorization (\autoref{sec:correction-guided-sampling-gray-scale-colorization}).
 
 \begin{figure}[htp!]
     \centering
@@ -296,11 +320,11 @@ this idea empirically.
         and
         sample obtained using intensity replacement as conditioning strategy according to \autoref{sec:correction-guided-sampling-gray-scale-colorization}.
     }
-    \label{fig:qualitative-evaluation-intensity}
+    \label{fig:qualitative-evaluation-intensity-replacment-cycle-gan}
 \end{figure}
 
-In \autoref{fig:qualitative-evaluation-intensity} we show evaluation results of this approach.
-Qualitatively we can observe those generated images are faithful to the input image (\autoref{fig:qualitative-evaluation-intensity}).
+In \autoref{fig:qualitative-evaluation-intensity-replacment-cycle-gan} we show evaluation results of this approach.
+Qualitatively we can observe those generated images are faithful to the input image (\autoref{fig:qualitative-evaluation-intensity-replacment-cycle-gan}).
 It is to be mentioned that faithfulness to the input image is not a quality learned by the network, but a design choice of the sampling procedure.
 Most noteworthy is that the colors estimated by the diffusion model appear realistic.
 Qualitative weaknesses in the colorization can be observed when analyzing the zebra image:
@@ -325,11 +349,11 @@ It is merely trained to produce invertible images.
         Samples of CycleGAN, the unconditional diffusion model and conditional diffusion model using intensity replacement sampling are generated.
         The FID (\autoref{sec:fid}) \parencite{ttur} is calculated by comparing the test dataset and the set of generated samples.
     }
-    \label{fig:qualitative-evaluation-full-high-pass}
+    \label{fig:quantitative-evaluation-intensity-replacment-cycle-gan}
 \end{table}
 
 
-Similar to the minor qualitative weakness, we also observe the FID of this naive approach to be $6.9$ FID points worse than CycleGAN.
+Similar to the minor qualitative weakness, we also observe the FID of this naive approach to be $6.9$ FID points worse than CycleGAN (\autoref{fig:quantitative-evaluation-intensity-replacment-cycle-gan}).
 Additionally, we see a gap between the sampling the unconditional diffusion model produces our method according to \Citeauthor*{sbgm} of $8.97$ FID points \parencite{sbgm}.
 This indicates that this method is too restrictive to allow competitive image generation.
 
@@ -462,10 +486,14 @@ As expected the diffusion now using the high-pass filter can manipulate the illu
 For example, we observe for left top image now, that not only the fox itself but also the environment has an orange-lighting as typically found in the training dataset.
 This reduction in restriction also positively influences the quantitative measurements:
 This method achieves a FID of $95.49$ which is even $0.53$ FID points better than the unconditional sampling (\autoref{fig:quantitative-evaluation-full-high-pass}).
-
 \todo{Resolve conflict to statement: "unconditional sampling is always the best" }
 
-\todo{Discuss the qualitative negative points $\rightarrow$ hallucinations}
+Apart from \autoref{fig:qualitative-evaluation-full-high-pass}, we observe some few examples of hallucination using this method. 
+In \autoref{fig:qualitative-evaluation-conditional-sampling-hallucinations} we present them. 
+As visible, the network seemingly generated colors and intensities of sky. 
+The network has the freedom to sample low-frequencies and uses that to generate sky, which it is also familiar with from training.
+In contrast, the sampling strategy of replacing intensity does not suffer from that effect. 
+We observe that these hallucinations are also dependent on the hyperparameter $\sigma$, discussed in \autoref{sec:influence-of-sigma-evaluation}.
 
 \subsection{Influence of Hyperparameter Sigma}
 \label{sec:influence-of-sigma-evaluation}

@@ -102,4 +102,19 @@ Focus is laid on the unpaired image translation because NIR-RGB image pairs are 
 We only need to train an unconditional diffusion model on the target domain. 
 Correction-guided sampling inspired by \textcite{ilvr} and enhanced for NIR infrared colorization using techniques from visible-infrared fusion \parencite{study-vis-nir-fusion} is proposed. 
 Furthermore, we study the difference with \textit{energy-guided} conditional sampling, as introduced \textcite{egsde}. 
-Finally, we ultimately compare it with an established GAN for near-infrared colorization by \textcite{mehri}. 
+Finally, we ultimately compare it with an established GAN for near-infrared colorization by \textcite{mehri}. +
+
+
+\begin{figure}[p]
+    \includegraphics[width=\textwidth]{gfx/Graphical-Abstract.pdf}
+    \caption{
+        \textbf{Structural overview}.
+        Motivated by combining both benefits of near-infrared and visible light images, 
+        we develop a novel sampling method based on denoising diffusion probabilistic models \parencite{ddpm} to colorize near-infrared images. 
+        We compare our model with current established baselines for NIR colorization: Generative Adversarial Models \parencite{mehri}. 
+        While developing our approach we focus on ways to guide the model (\autoref{sec:conditional-sampling}). 
+        First we investigate two sampling strategy, the energy-guided (\autoref{sec:energy-guided-sampling}) and correction-guided sampling (\autoref{sec:correction-guided-sampling}). 
+        Secondly ways to formulate consistency with the near-infrared image into the sampling process are researched, namely by replacing intensity with the near-infrared images (\autoref{sec:correction-guided-sampling-gray-scale-colorization}) 
+        and by replacing only the details of the intensity with those of the near-infrared image (\autoref{sec:correction-guided-sampling-nir-colorization}).
+    }
+\end{figure}
