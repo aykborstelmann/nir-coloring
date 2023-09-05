@@ -23,7 +23,7 @@ is annotated in the COCO Camera Traps format \parencite{serengeti}. Therefore, d
 Unlike the CCT dataset, Snapshot Serengeti employed multiple cameras for images captured at night.
 Scoutgard's SG565 cameras produce RGB \textbf{night} images using an \textit{incandescent} flash and DLC Covert II cameras use an infrared flash and therefore produce NIR night images \parencite{serengeti}.
 
-\subsection{Subset Generation}
+\subsection{Data Preprocessing}
 \label{sec:subset-generation}
 Since both datasets (CCT and Snapshot Serengeti) are substantially larger than processable for training, choosing a subset of these images is essential.
 The requirements for this subset strongly influence the training performance of the translation models.
@@ -181,10 +181,11 @@ $\lambda$ and $\gamma$ are weights for the relative importance of the L1 cycle c
       \mathcal{L} = \lambda \mathcal{L}_{cyc} + \mathcal{L}_{SSIM} + \gamma \mathcal{L}_{identity}(G,F) + \mathcal{L}_{RaLSGAN}^G(G,D_Y,X,Y) + \mathcal{L}_{RaLSGAN}^F(F,D_X,Y,X)
    \end{aligned}
 \end{equation}
+% TIMM: sicherstellen dass die Gleichung umbricht
 
 \subsubsection*{U-Net}
 \label{sec:cycle-gan-u-net}
-In praxis, both functions $G$ and $F$ are generation networks. Contrary to the ResNet generators \parencite{resnet} \citeauthor{cyclegan-original} used in the original CycleGAN \parencite{cyclegan-original},
+Typically, both functions $G$ and $F$ are generation networks. Contrary to the ResNet generators \parencite{resnet} \citeauthor{cyclegan-original} used in the original CycleGAN \parencite{cyclegan-original},
 \citeauthor*{mehri} propose U-Net generators \parencite{unet}, because they perform better in learning the color \parencite{mehri}.
 Additionally, U-Net generators also need less computational time for training compared to ResNet \parencite{mehri}.
 We input all three (equal) channels of the NIR image into the generator and receive an RGB image as output.
@@ -204,8 +205,8 @@ Through the skip connection the architecture that can learn to "choose" how deep
 \end{figure}
 
 \subsubsection*{Optimizations}
-\Citeauthor*{ttur} demonstrated that using the \textit{two timescale update rule} (TTUR), which states that when the generator and the discriminator have different learning rates,
-mode collapse can be prevented in image translation tasks using GANs \parencite{ttur}.
+\Citeauthor*{ttur} demonstrated that using the \textit{two timescale update rule} (TTUR) is beneficial, which states that when the generator and the discriminator have different learning rates,
+mode collapse can be prevented in image translation tasks using GANs \parencite{ttur}. % TIMM: Satz bitte nochmal überprüfen
 Inspired by this, \citeauthor*{mehri} propose utilizing two learning rates for the CycleGAN architecture \parencite{mehri}.
 
 Additionally, \citeauthor*{mehri} propose the use of \textit{spectral normalization}, a technique introduced by \Citeauthor*{spectral-norm}, to stabilize the training of the discriminators $D_X$ and $D_Y$ \parencite{spectral-norm, mehri}.
@@ -214,7 +215,7 @@ Finally, \citeauthor*{mehri} observe that while the cycle consistency loss helps
 Therefore, \citeauthor*{mehri} propose to decrease the weight of the cycle consistency loss after half of the training process \parencite{mehri}.
 
 \section{Diffusion Models}
-Denoising Diffusion Probabilistic Models as introduced by \cite{ddpm} are generative networks recently advancing.
+Denoising Diffusion Probabilistic Models (DDPMs) as introduced by \cite{ddpm} are generative networks recently advancing.  % TIMM: unklar was du mit "recently advancing" meinst. Eventuell eher "DDPMs are recent advances in the field of generative networks" o.ä.?
 We provide a detailed theoretical background for this architecture in \autoref{sec:diffusion-prerequisites}.
 Further we answer theoretically how one can use unconditional diffusion to sample given a condition in \autoref{sec:conditional-sampling}.
 Our approach for grayscale-colorization and near-infrared colorization is presented in \autoref{sec:correction-guided-sampling} while
@@ -386,7 +387,7 @@ Unlike CycleGAN, the model needs information about the timestep $t$. This is pro
 
 \subsection{Conditional Sampling}
 \label{sec:conditional-sampling}
-As now the unconditional sampling is derived, our application context of NIR colorization does not benefit from it yet.
+Our applocation context of NIR colorization is not able to benefit from the uncoditional sampling as derived up until now.
 A method is needed to \textit{condition} our diffusion model on the given NIR image.
 We now derive a general purpose conditioning method as \textcite{sbgm,diffusion-beats-gans} introduced them and show in \autoref{sec:correction-guided-sampling} and \autoref{sec:energy-guided-sampling}
 two different way of leveraging to achieve our goal.
@@ -438,7 +439,7 @@ By using this new noise estimator $\bar{\epsilon}_\theta(\x_t, \ce, t)$, we can 
 
 Therefore, it is possible to use a general purpose unconditional diffusion model and conditional sample with it.
 It is only needed to calculate or approximate the score-function $\nabla_{\x_t} \log p_\theta(\ce|\x_t)$ \parencite{diffusion-beats-gans}.
-\autoref{alg:sampling-conditional} show how conditional sampling can be implemented.
+\autoref{alg:sampling-conditional} shows how conditional sampling can be implemented.
 
 \begin{algorithm}[htp!]
    \caption{Conditional Sampling}

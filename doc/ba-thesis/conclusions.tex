@@ -1,16 +1,17 @@
 \chapter{Conclusion}
-In this thesis we develop diffusion-based near-infrared colorization system. 
-To our best knowledge we are the first to apply diffusion models for near-infrared colorization.
-In comparison with a GAN baseline \parencite{mehri} we show superiority of our system in quantitative and qualitative evaluation.
-This improves tooling for wildlife researchers to enhance their understanding and interpretation of visual data obtained from NIR images.
+In this thesis we develop, to the best of our knowledge, the first diffusion-based near-infrared colorization system.
 
 We derive the system by applying diffusion-based gray-scale colorization \parencite{sbgm} and analyzing its weaknesses in our application context.
-Further we leverage knowledge gained from the related research-field of NIR-RGB fusion \parencite{study-vis-nir-fusion} to exceed the performance of our baseline.
+Further we leverage findings from the related research-field of NIR-RGB fusion \parencite{study-vis-nir-fusion} to exceed the performance of our baseline.
 The influence of a hyperparameter for guiding our system and its influence on the similarity to the target distribution is discovered.
 Two conditional guidance method for near-infrared colorization using diffusion models, the \textit{energy-guided} and \textit{loss-guided} sampling 
 are examined, and we empirically show the superiority of the latter in our application context.
 Last but not least we show the importance of the dividing the training dataset into near-infrared night images and RGB incandescent images
 and provide tooling this task on the Serengeti dataset \parencite{serengeti}.
+
+Finally, we compare our system to a strong GAN baseline \parencite{mehri}, and show its superiority in a quantitative and qualitative evaluation.
+This improves tooling for wildlife researchers to enhance their understanding and interpretation of visual data obtained from NIR images.
+% TIMM: von oben nach unten verschoben
 
 \todo{Further discuss last point in discussion / evaluation}
 

@@ -36,13 +36,15 @@ Intuitively, if the generated images are realistic, the statistics of features i
 \todo{Discuss usage of FID}
 
 \subsection{Qualitative Evaluation Methods}
-For qualitative evaluation, we define categories on how we determine the superior generated images. These are again based on the two main application contexts.
+For qualitative evaluation, we define categories on how we determine the quality of generated images. These are again based on the two main application contexts.
 
 The first category describes the \textit{naturality} of an image, where the generated images should resemble how humans perceive the world, without artifacts or periodic patterns that can affect visual perception.
 
 The second category refers to the \textit{content preservation} of the input image. This should help humans as well as object detection systems to find and classify animals accurately.
 
 \textit{Hallucinations}, as artifacts or scene elements that are not in the input image, contradict naturality and content preservation, and therefore are undesirable.
+
+% TIMM: für jede der Kategorien wäre ein positiv und ein negativ-Beispiel hilfreich. Ansonsten wären auch Referenzen auf andere Figures möglich wo solche Fälle auftreten.
 
 \section{Dataset Requirements}
 Besides comparing both NIR colororization methods, a study on the important points for generating subsets and the suitability of each data source
@@ -68,6 +70,7 @@ As we will show, both the diffusion model and CycleGAN perform significantly wor
     }
     \label{fig:qualitative-evaluation-unconditional-sampling-caltech}
 \end{figure}
+% TIMM: left / right besser markieren oder abgrenzen
 
 We train both CycleGAN and an unconditional diffusion model (acoording to \autoref{sec:methods-cycle-gan} and \autoref{sec:diffusion-prerequisites}) with a subset of the Caltech Camera Traps dataset \parencite{caltech} where \textit{randomly} from NIR and RGB images are sampled.
 Secondly the same training is performed but with a dataset subset of the Serengeti dataset \parencite{serengeti} where particularly \textit{only night} images from the NIR and RGB domain are chosen.
