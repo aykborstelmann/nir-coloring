@@ -178,10 +178,10 @@ $\lambda$ and $\gamma$ are weights for the relative importance of the L1 cycle c
 \begin{equation}
    \label{eqn:cycle_gan_total_loss}
    \begin{aligned}
-      \mathcal{L} = \lambda \mathcal{L}_{cyc} + \mathcal{L}_{SSIM} + \gamma \mathcal{L}_{identity}(G,F) + \mathcal{L}_{RaLSGAN}^G(G,D_Y,X,Y) + \mathcal{L}_{RaLSGAN}^F(F,D_X,Y,X)
+      \mathcal{L} = \lambda \mathcal{L}_{cyc} &+ \mathcal{L}_{SSIM} + \gamma \mathcal{L}_{identity}(G,F) \\
+      & + \mathcal{L}_{RaLSGAN}^G(G,D_Y,X,Y) + \mathcal{L}_{RaLSGAN}^F(F,D_X,Y,X)
    \end{aligned}
 \end{equation}
-% TIMM: sicherstellen dass die Gleichung umbricht
 
 \subsubsection*{U-Net}
 \label{sec:cycle-gan-u-net}
