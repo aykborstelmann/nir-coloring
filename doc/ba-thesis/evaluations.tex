@@ -59,7 +59,8 @@ As we will show, both the diffusion model and CycleGAN perform significantly wor
 \begin{figure}[htp!]
     \centering
     \setkeys{Gin}{width=\linewidth}
-    \begin{tabularx}{.7\textwidth}{Y Y Y !{\space} Y Y Y}
+    \begin{tabularx}{.8\textwidth}{Y Y Y !{\hspace{.05\textwidth}} Y Y Y}
+        \multicolumn{3}{c}{Test Dataset}                                                                                 & \multicolumn{3}{c}{Unconditional Diffusion}                                                                                                                                                                                                                                                                                                                                                                                                                                                                       \\
         \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_5858c0dc-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585a640e-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585a6486-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00002.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00001.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00000.png} \\
         \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585dab96-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585f4d99-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_585f4fbd-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00005.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00004.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00003.png} \\
         \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_5860ef9d-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_58629181-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/rgb_58629415-23d2-11e8-a6a3-ec086b02610b.jpg} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00008.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00007.png} & \includegraphics{gfx/unconditional-diffusion-sampling-caltech-qual/diffusion_00006.png}
@@ -70,7 +71,6 @@ As we will show, both the diffusion model and CycleGAN perform significantly wor
     }
     \label{fig:qualitative-evaluation-unconditional-sampling-caltech}
 \end{figure}
-% TIMM: left / right besser markieren oder abgrenzen
 
 We train both CycleGAN and an unconditional diffusion model (acoording to \autoref{sec:methods-cycle-gan} and \autoref{sec:diffusion-prerequisites}) with a subset of the Caltech Camera Traps dataset \parencite{caltech} where \textit{randomly} from NIR and RGB images are sampled.
 Secondly the same training is performed but with a dataset subset of the Serengeti dataset \parencite{serengeti} where particularly \textit{only night} images from the NIR and RGB domain are chosen.
@@ -277,7 +277,7 @@ Physically near-infrared light is electromagnetic radiation with wavelengths bet
 It is a property of the object which wavelength it reflects and which it absorbs.
 Therefore, objects might reflect near-infared strongly leading to high intensities for the observer while absorbing more of the visible light leading to a low intensity for the observer.
 In \autoref{fig:diff-nir-and-visible-light-exampels} we show some direct comparison between intensity of colored images (gray-scale) and near-infrared images.
-As visible, particular for vegetation (last row) higher reflectance of near-infrared light in comparison to visible light occurs.  
+As visible, particular for vegetation (last row) higher reflectance of near-infrared light in comparison to visible light occurs.
 
 
 \begin{figure}[htp!]
@@ -297,10 +297,10 @@ As visible, particular for vegetation (last row) higher reflectance of near-infr
 \end{figure}
 
 
-The main application context for near-infrared colorization in wild life monitoring lies in colorizing night images. 
+The main application context for near-infrared colorization in wild life monitoring lies in colorizing night images.
 In night images only a limited cone of illuminating light is available and therefore background such as vegetation is less visible.
 Thus, we argue, we can consider ignoring the physical difference between near-infrared and visible light and use the near-infrared images as approximation of the intensity.
-\Textcite{sbgm} provided a gray-scale colorization method using diffusion models. 
+\Textcite{sbgm} provided a gray-scale colorization method using diffusion models.
 We evaluate our approximation for colorizing near-infrared images by applying this algorithm for gray-scale colorization (\autoref{sec:correction-guided-sampling-gray-scale-colorization}).
 
 \begin{figure}[htp!]
@@ -488,11 +488,11 @@ This reduction in restriction also positively influences the quantitative measur
 This method achieves a FID of $95.49$ which is even $0.53$ FID points better than the unconditional sampling (\autoref{fig:quantitative-evaluation-full-high-pass}).
 \todo{Resolve conflict to statement: "unconditional sampling is always the best" }
 
-Apart from \autoref{fig:qualitative-evaluation-full-high-pass}, we observe some few examples of hallucination using this method. 
-In \autoref{fig:qualitative-evaluation-conditional-sampling-hallucinations} we present them. 
-As visible, the network seemingly generated colors and intensities of sky. 
+Apart from \autoref{fig:qualitative-evaluation-full-high-pass}, we observe some few examples of hallucination using this method.
+In \autoref{fig:qualitative-evaluation-conditional-sampling-hallucinations} we present them.
+As visible, the network seemingly generated colors and intensities of sky.
 The network has the freedom to sample low-frequencies and uses that to generate sky, which it is also familiar with from training.
-In contrast, the sampling strategy of replacing intensity does not suffer from that effect. 
+In contrast, the sampling strategy of replacing intensity does not suffer from that effect.
 We observe that these hallucinations are also dependent on the hyperparameter $\sigma$, discussed in \autoref{sec:influence-of-sigma-evaluation}.
 
 \subsection{Influence of Hyperparameter Sigma}
