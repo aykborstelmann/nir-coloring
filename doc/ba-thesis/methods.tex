@@ -205,8 +205,8 @@ Through the skip connection the architecture that can learn to "choose" how deep
 \end{figure}
 
 \subsubsection*{Optimizations}
-\Citeauthor*{ttur} demonstrated that using the \textit{two timescale update rule} (TTUR) is beneficial, which states that when the generator and the discriminator have different learning rates,
-mode collapse can be prevented in image translation tasks using GANs \parencite{ttur}. % TIMM: Satz bitte nochmal überprüfen
+\Textcite{ttur} demonstrated that using the \textit{two timescale update rule} (TTUR) is beneficial, which states that when the generator and the discriminator have different learning rates,
+mode collapse can be prevented in image translation tasks using GANs \parencite{mehri}.
 Inspired by this, \citeauthor*{mehri} propose utilizing two learning rates for the CycleGAN architecture \parencite{mehri}.
 
 Additionally, \citeauthor*{mehri} propose the use of \textit{spectral normalization}, a technique introduced by \Citeauthor*{spectral-norm}, to stabilize the training of the discriminators $D_X$ and $D_Y$ \parencite{spectral-norm, mehri}.
