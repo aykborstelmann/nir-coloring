@@ -10,3 +10,4 @@ nir_coloring.egg-info
 results/
 doc/
 .github/workflows/compile-latex.yml
+**/.ipynb_checkpoints/**
