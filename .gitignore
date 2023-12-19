@@ -1,0 +1,12 @@
+mp/dataset
+.idea/
+data/dataset/caltech_images.json
+data/dataset/SnapshotSerengetiS*.json
+data/dataset/out/
+tmp/
+.env
+__pycache__
+nir_coloring.egg-info
+results/
+doc/
+.github/workflows/compile-latex.yml

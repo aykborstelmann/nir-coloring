@@ -1,0 +1,27 @@
+name: nir-coloring
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - pip
+  - aiohttp
+  - aiofiles
+  - pandas
+  - tqdm
+  - pillow
+  - astral
+  - azure-storage-blob
+  - python-dotenv
+  - opencv
+  - notebook
+  - matplotlib
+  - seaborn
+  - kornia
+  - pytorch
+  - torchvision
+  - threadpoolctl
+  - scipy=1.11.1 #https://github.com/GaParmar/clean-fid/issues/53
+  - pip:
+      - -e .
+      - clean-fid
+      - git+https://github.com/openai/CLIP.git
