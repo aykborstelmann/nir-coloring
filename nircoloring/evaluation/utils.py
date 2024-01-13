@@ -4,21 +4,25 @@ from os.path import join
 from pathlib import PosixPath, Path
 from typing import List, Tuple
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pyiqa
 import seaborn as sns
+import tqdm
 from PIL import Image
 from matplotlib import figure, axes
-import matplotlib
+from torch.utils.data import Dataset, DataLoader
+from torchvision.transforms import ToTensor
 
 from nircoloring.config import ROOT_DIR
-
 from nircoloring.evaluation.fid import calculate_fid_from_images
 
 GRAPHICS_DIR = join(ROOT_DIR, "doc/paper/gfx")
 
 sns.set_theme()
+
 
 def is_image_file(file: Path):
     if not file.is_file():
@@ -365,6 +369,56 @@ def result_fid_to_df(results_to_plot: list[EvaluationResult]):
         "FID": [result.load_fid() for result in results_to_plot],
     }
     return pd.DataFrame(data, index=[result.title for result in results_to_plot])
+
+
+class NumpyDataset(Dataset):
+    tensors = None
+
+    def __init__(self, images: List[np.array]):
+        to_tensor = ToTensor()
+        self.tensors = [to_tensor(image) for image in images]
+
+    def __getitem__(self, index):
+        return self.tensors[index]
+
+    def __len__(self):
+        return len(self.tensors)
+
+
+def result_to_quan_df(results_to_plot, metrics=None):
+    if metrics is None:
+        metrics = ["niqe", "brisque"]
+
+    datasets = (NumpyDataset(result.load_images()) for result in results_to_plot)
+    dataloaders = [DataLoader(dataset, batch_size=50) for dataset in datasets]
+
+    metric_results = {
+        metric.upper(): apply_metric(dataloaders, metric) for metric in metrics
+    }
+
+    data = {
+        **metric_results,
+        "FID": [result.load_fid() for result in results_to_plot],
+    }
+    return pd.DataFrame(data, index=[result.title for result in results_to_plot])
+
+
+def apply_metric(dataloaders, metric_name):
+    metric = pyiqa.create_metric(metric_name)
+
+    dataloaders = tqdm.tqdm(dataloaders, f"Evaluating {metric_name}")
+    return [apply_metric_for_one_dataloader(dataloader, metric) for dataloader in dataloaders]
+
+
+def apply_metric_for_one_dataloader(dataloader, metric):
+    results = []
+
+    for data in tqdm.tqdm(dataloader):
+        results.append(metric(data))
+
+    result = np.array(results).reshape(len(results) * results[0].shape[0])
+
+    return np.average(result)
 
 
 def plot_fid_bars(df):
