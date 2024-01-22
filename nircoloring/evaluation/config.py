@@ -9,6 +9,7 @@ RESULT_DIR = join(ROOT_DIR, "results")
 
 CYCLE_GAN_RESULT_DIR = join(RESULT_DIR, "cycle-gan")
 IHFS_RESULT_DIR = join(RESULT_DIR, "ihfs")
+DEOLDIFY_RESULT_DIR = join(RESULT_DIR, "deoldify")
 
 ### serengeti-night dataset
 serengeti_night_nir_test = Result(
@@ -178,5 +179,19 @@ cycle_gan_serengeti_night_large_val = EvaluationResult(
     "CycleGAN SNL (Val)",
     fid_reference=serengeti_night_large_rgb_val,
     filename_matcher="*_fake.png",
+    load_size=(128, 128),
+)
+
+### DeOldify
+deoldlify_correct_size_serengeti_night_large_test = EvaluationResult(
+    join(DEOLDIFY_RESULT_DIR, "serengeti-night-large-test", "correct-size"),
+    "DeOldify Correct Size",
+    fid_reference=serengeti_night_large_rgb_test,
+    load_size=(128, 128),
+)
+deoldlify_original_size_serengeti_night_large_test = EvaluationResult(
+    join(DEOLDIFY_RESULT_DIR, "serengeti-night-large-test", "original-size"),
+    "DeOldify Original Size",
+    fid_reference=serengeti_night_large_rgb_test,
     load_size=(128, 128),
 )
