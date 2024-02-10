@@ -387,7 +387,7 @@ class NumpyDataset(Dataset):
 
 def result_to_quan_df(results_to_plot, metrics=None):
     if metrics is None:
-        metrics = ["niqe", "brisque"]
+        metrics = ["niqe", "nrqm"]
 
     datasets = (NumpyDataset(result.load_images()) for result in results_to_plot)
     dataloaders = [DataLoader(dataset, batch_size=50) for dataset in datasets]
